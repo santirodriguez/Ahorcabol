@@ -72,27 +72,22 @@ For production, keep teamlist.json — it’s cleaner and easier to update.
 
 ## Getting Started
 
-Because index.html fetches teamlist.json, serve the folder with a local static server (browsers often block fetch from file://).
+First, **download or clone the entire project** so that all files (index.html, script.js, styles.css, and teamlist.json) are located together in the **same folder** on your computer.
 
-**Python 3**
+Once you have the files locally, you can simply open index.html in your preferred browser  
+(for example, by double-clicking it or running "firefox index.html" in the terminal).  
+The game will automatically load teamlist.json and start right away.
 
+If your browser blocks the JSON fetch (some versions of Chrome or Edge do this for file:// URLs),  
+you can instead run a quick local web server:
+
+**Python 3**  
 cd ahorcabol  
 python -m http.server 5173  
-open http://localhost:5173
+open http://localhost:5173  
 
-**Node.js (http-server)**
-
-npm -g i http-server  
-cd ahorcabol  
-http-server -p 5173  
-open http://localhost:5173
-
-**npx serve (no global install)**
-
-cd ahorcabol  
-npx serve -l 5173
-
-Place teamlist.json next to index.html and reload.
+Once running, open the shown address in your browser.  
+Make sure teamlist.json stays in the same directory as index.html — that’s where the game reads the team data from.
 
 ---
 
