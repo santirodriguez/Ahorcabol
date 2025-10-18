@@ -53,7 +53,7 @@ teamlist.json is an array of country groups. Country names go in `pais` and team
     [
       {
         "pais": "Argentina",
-        "equipos": [""Vélez Sarsfield", Boca Juniors", "River Plate", "..."]
+        "equipos": ["Vélez Sarsfield", Boca Juniors", "River Plate", "..."]
       },
       {
         "pais": "España",
