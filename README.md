@@ -5,24 +5,24 @@
 </p>
 
 <p align="center">
-  <strong>Football hangman, because watching your team was apparently not enough punishment.</strong>
+  <strong>Football hangman for people whose team did not ruin their day thoroughly enough.</strong>
 </p>
 
 Ahorcabol is a lightweight browser game about guessing football club names before the hangman catches up with you.
 
-No accounts. No ads. No framework. No build step. Just football, letters, and the sort of emotional stability usually associated with a stoppage-time equalizer.
+No accounts. No ads. No framework. No build step. Just football, letters, and one more completely unnecessary reason to suffer.
 
 ## Why
 
-Football already gives you VAR, missed penalties, inexplicable substitutions and entire weekends ruined by eleven strangers.
+Football already has VAR, missed penalties, inexplicable substitutions and entire weekends ruined by eleven strangers.
 
-Ahorcabol adds spelling to the list.
+Ahorcabol contributes spelling. Nobody asked, but here we are.
 
 ## Play
 
 **Development / test build:** https://santiagorodriguez.com/Ahorcabol/
 
-It may be newer than the latest stable GitHub release. Test accordingly; blind faith is for transfer windows.
+It may be ahead of the latest stable GitHub release. Use accordingly; blind faith belongs in transfer windows.
 
 ## What it does
 
@@ -41,20 +41,22 @@ It may be newer than the latest stable GitHub release. Test accordingly; blind f
 ## Screenshot
 
 <p align="center">
-  <img src="assets/branding/screenshot-v1.5.png" alt="Ahorcabol 1.5" width="90%" />
+  <img src="assets/branding/screenshot-v.1.5.png" alt="Ahorcabol 1.5" width="90%" />
 </p>
+
+## Author
+
+[Santiago Rodriguez](https://santiagorodriguez.com)
+
+<a href="https://santiagorodriguez.com/donate"><img src="assets/branding/donate.svg" alt="Donate" height="52" /></a>
 
 ## Run locally
 
 Serve the repository directory with any static web server and open `index.html`.
 
-There is no build command. Civilization survives.
+There is no build command. Society remains functional.
 
 If `teamlist.json` cannot be loaded, the game uses its built-in fallback list.
-
-## Author
-
-[Santiago Rodriguez](https://santiagorodriguez.com)
 
 ## License
 
