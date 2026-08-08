@@ -23,6 +23,8 @@ const I18N = {
     scoreboard: "Marcador",
     hiddenTeam: "Equipo oculto",
     keyboard: "Teclado",
+    gameControls: "Controles del partido",
+    arenaLabel: "Cancha de Ahorcabol",
     noTeams: "No hay equipos en este filtro. Ni para perder.",
     noMoreHints: "No da para más pistas. Milagros tampoco.",
     alreadyRevealed: "Ya está todo revelado. Y todavía costaba, ¿no?",
@@ -56,6 +58,8 @@ const I18N = {
     scoreboard: "Scoreboard",
     hiddenTeam: "Hidden team",
     keyboard: "Keyboard",
+    gameControls: "Game controls",
+    arenaLabel: "Ahorcabol pitch",
     noTeams: "No teams in this filter. Not even one to lose with.",
     noMoreHints: "No more hints. Miracles are also unavailable.",
     alreadyRevealed: "Everything is already revealed. Still took a while, huh?",
@@ -89,6 +93,8 @@ const I18N = {
     scoreboard: "Marcador",
     hiddenTeam: "Equip ocult",
     keyboard: "Teclat",
+    gameControls: "Controls del partit",
+    arenaLabel: "Camp d'Ahorcabol",
     noTeams: "No hi ha equips en aquest filtre. Ni per perdre.",
     noMoreHints: "No queden pistes. Miracles tampoc.",
     alreadyRevealed: "Ja està tot revelat. I encara costava, oi?",
@@ -162,6 +168,8 @@ const els = {
   confetti: document.getElementById("confetti"),
   languageSwitcher: document.getElementById("languageSwitcher"),
   scoreboard: document.querySelector(".scoreboard"),
+  matchPanel: document.querySelector(".match-panel"),
+  arena: document.querySelector(".arena"),
   word: document.querySelector(".word"),
   ball: null,
   netRect: null
@@ -288,9 +296,11 @@ function buildKeyboard() {
 }
 function markKey(rawCharacter, good) {
   const normalized = normalizeChar(rawCharacter);
-  const key = [...els.keyboard.querySelectorAll(".key")].find((item) => normalizeChar(item.dataset.k) === normalized);
-  if (!key) return;
-  key.classList.add("used", good ? "good" : "bad");
+  els.keyboard.querySelectorAll(".key").forEach((key) => {
+    if (normalizeChar(key.dataset.k) === normalized) {
+      key.classList.add("used", good ? "good" : "bad");
+    }
+  });
 }
 
 function updateGoalGraphics() {
@@ -498,6 +508,8 @@ function applyLanguage(language, { persist = true } = {}) {
   });
   els.languageSwitcher.setAttribute("aria-label", t("languageSwitcher"));
   els.scoreboard.setAttribute("aria-label", t("scoreboard"));
+  els.matchPanel.setAttribute("aria-label", t("gameControls"));
+  els.arena.setAttribute("aria-label", t("arenaLabel"));
   els.word.setAttribute("aria-label", t("hiddenTeam"));
   els.masked.setAttribute("aria-label", t("hiddenTeam"));
   els.keyboard.setAttribute("aria-label", t("keyboard"));
