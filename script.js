@@ -1,92 +1,157 @@
 "use strict";
 
-/* ================= normalización: ignora acentos (A≈Á, Ñ≈N, etc.) ================= */
-const normalize = (str) =>
-  str
-    .toUpperCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // quita diacríticos
-    .replace(/[^A-Z]/g, "");         // solo letras base
-
-const normalizeChar = (ch) => normalize(ch).slice(0,1);
-
-/* Teclado (incluye Ñ visual, pero al comparar Ñ≈N) */
+const LANGUAGES = ["es-AR", "en-US", "ca"];
+const DEFAULT_LANGUAGE = "es-AR";
+const STORAGE_KEY = "ahorcabol";
 const KB_ROWS = ["QWERTYUIOP", "ASDFGHJKLÑ", "ZXCVBNM"];
 
-/* ====== Fallback completo si falla el fetch del JSON ====== */
-const FULL_FALLBACK = [
-  {
-    "pais": "Argentina",
-    "equipos": [
-      "Argentinos Juniors","Atlético Tucumán","Banfield","Barracas Central","Belgrano","Boca Juniors",
-      "Central Córdoba (Sgo. del Estero)","Defensa y Justicia","Deportivo Riestra","Estudiantes de La Plata",
-      "Gimnasia y Esgrima La Plata","Godoy Cruz","Huracán","Independiente","Independiente Rivadavia",
-      "Instituto de Córdoba","Lanús","Newell’s Old Boys","Platense","Racing","River Plate","Rosario Central",
-      "San Lorenzo","San Martín de San Juan","Sarmiento","Talleres de Córdoba","Tigre","Unión de Santa Fe",
-      "Vélez Sarsfield"
-    ]
+const I18N = {
+  "es-AR": {
+    htmlLang: "es-AR",
+    locale: "es-AR",
+    title: "Ahorcabol — Ahorcado futbolero",
+    country: "País",
+    all: "Todos",
+    newGame: "Nuevo partido",
+    score: "Puntos",
+    streak: "Racha",
+    lives: "Vidas",
+    hint: "Pista (−1 vida)",
+    giveUp: "Me rindo",
+    footer: "Ahorcabol — una forma más gráfica de querer colgarte después de ver perder a tu equipo.",
+    languageSwitcher: "Idioma",
+    scoreboard: "Marcador",
+    hiddenTeam: "Equipo oculto",
+    keyboard: "Teclado",
+    gameControls: "Controles del partido",
+    arenaLabel: "Cancha de Ahorcabol",
+    noTeams: "No hay equipos en este filtro. Ni para perder.",
+    noMoreHints: "No da para más pistas. Milagros tampoco.",
+    alreadyRevealed: "Ya está todo revelado. Y todavía costaba, ¿no?",
+    hintMessage: "Pista servida. La dignidad se cobra aparte.",
+    was: "Era {team}. Sí, ese.",
+    goal: "¡Gol! Mirá vos.",
+    out: "¡Afuera! Qué sorpresa.",
+    gameOver: "Se terminó. Era {team}. Papelón cerrado.",
+    greatGoal: "¡GOLAZO! Contra todo pronóstico.",
+    rival: "Te tocó {country}. Suerte con eso.",
+    dataWarning: "No se pudo leer teamlist.json. Usando la lista de respaldo.",
+    formatWarning: "Formato inesperado",
+    speechGoal: "¡Gooooool!",
+    speechOut: "¡Fuera!",
+    speechWin: "¡Golazo!"
   },
-  {
-    "pais": "España",
-    "equipos": [
-      "Alavés","Athletic (de Bilbao)","Atlético de Madrid","Barcelona","Celta de Vigo","Elche",
-      "Espanyol (de Barcelona)","Getafe","Girona","Levante","Mallorca","Osasuna","Rayo Vallecano",
-      "Real Betis","Real Madrid","Real Oviedo","Real Sociedad","Sevilla","Valencia","Villarreal"
-    ]
+  "en-US": {
+    htmlLang: "en-US",
+    locale: "en-US",
+    title: "Ahorcabol — Football Hangman",
+    country: "Country",
+    all: "All",
+    newGame: "New match",
+    score: "Score",
+    streak: "Streak",
+    lives: "Lives",
+    hint: "Hint (−1 life)",
+    giveUp: "Give up",
+    footer: "Ahorcabol — a more graphic way to want to hang yourself after watching your team lose.",
+    languageSwitcher: "Language",
+    scoreboard: "Scoreboard",
+    hiddenTeam: "Hidden team",
+    keyboard: "Keyboard",
+    gameControls: "Game controls",
+    arenaLabel: "Ahorcabol pitch",
+    noTeams: "No teams in this filter. Not even one to lose with.",
+    noMoreHints: "No more hints. Miracles are also unavailable.",
+    alreadyRevealed: "Everything is already revealed. Still took a while, huh?",
+    hintMessage: "Hint delivered. Dignity sold separately.",
+    was: "It was {team}. Yes, that one.",
+    goal: "Goal. Look at you.",
+    out: "Wide. Shocking.",
+    gameOver: "That's it. It was {team}. Magnificent collapse.",
+    greatGoal: "What a goal. Against all expectations.",
+    rival: "You got {country}. Good luck with that.",
+    dataWarning: "Could not read teamlist.json. Using the fallback list.",
+    formatWarning: "Unexpected data format",
+    speechGoal: "Goal!",
+    speechOut: "Wide!",
+    speechWin: "What a goal!"
   },
-  {
-    "pais": "Inglaterra",
-    "equipos": [
-      "Arsenal","Aston Villa","Bournemouth","Brentford","Brighton","Burnley","Chelsea","Crystal Palace",
-      "Everton","Fulham","Leeds","Liverpool","Manchester City","Manchester United","Newcastle",
-      "Nottingham Forest","Sunderland","Tottenham","West Ham","Wolverhampton"
-    ]
-  },
-  {
-    "pais": "Alemania",
-    "equipos": [
-      "Augsburg","Union Berlín","Werder Bremen","Borussia Dortmund","Eintracht Frankfurt","Freiburg","Hamburgo",
-      "Heidenheim","Hoffenheim","Colonia","RB Leipzig","Bayer Leverkusen","Mainx","Borussia Mönchengladbach",
-      "Bayern Múnich","St. Pauli","Stuttgart","Wolfsburgo"
-    ]
-  },
-  {
-    "pais": "Francia",
-    "equipos": [
-      "París Saint-Germain","Marsella","Estrasburgo","Lyon","Mónaco","Lens","Lille","Brest","Niza","Nantes",
-      "Rennes","Lorient","Le Havre","Auxerre","Metz","Angers"
-    ]
-  },
-  {
-    "pais": "Portugal",
-    "equipos": [
-      "Porto","Sporting de Lisboa","Benfica","Braga","Gil Vicente","Moreirense","Famalicão","Vitória Guimarães",
-      "Nacional","Alverca","Arouca","Río Ave","Santa Clara","Casa Pia","Estrela","Estoril","Tondela","AVS"
-    ]
-  },
-  {
-    "pais": "Brasil",
-    "equipos": [
-      "Flamengo","Palmeiras","Bragantino","Fluminense","Ceará","Cruzeiro","Corinthians","Bahía","Internacional",
-      "Botafogo","San Pablo","Vasco da Gama","Juventud","Mirassol","Fortaleza","Atlético Mineiro","Vitória",
-      "Gremio","Santos","Sport Recife"
-    ]
+  ca: {
+    htmlLang: "ca",
+    locale: "ca-ES",
+    title: "Ahorcabol — Penjat futboler",
+    country: "País",
+    all: "Tots",
+    newGame: "Partit nou",
+    score: "Punts",
+    streak: "Ratxa",
+    lives: "Vides",
+    hint: "Pista (−1 vida)",
+    giveUp: "Em rendeixo",
+    footer: "Ahorcabol — una manera més gràfica de voler penjar-te després de veure perdre el teu equip.",
+    languageSwitcher: "Idioma",
+    scoreboard: "Marcador",
+    hiddenTeam: "Equip ocult",
+    keyboard: "Teclat",
+    gameControls: "Controls del partit",
+    arenaLabel: "Camp d'Ahorcabol",
+    noTeams: "No hi ha equips en aquest filtre. Ni per perdre.",
+    noMoreHints: "No queden pistes. Miracles tampoc.",
+    alreadyRevealed: "Ja està tot revelat. I encara costava, oi?",
+    hintMessage: "Pista servida. La dignitat va a part.",
+    was: "Era {team}. Sí, aquest.",
+    goal: "Gol. Mira tu.",
+    out: "Fora. Quina sorpresa.",
+    gameOver: "S'ha acabat. Era {team}. Gran desastre.",
+    greatGoal: "Golàs. Contra tot pronòstic.",
+    rival: "T'ha tocat {country}. Sort amb això.",
+    dataWarning: "No s'ha pogut llegir teamlist.json. S'utilitza la llista de reserva.",
+    formatWarning: "Format inesperat",
+    speechGoal: "Gol!",
+    speechOut: "Fora!",
+    speechWin: "Golàs!"
   }
+};
+
+const COUNTRY_LABELS = {
+  Argentina: { "es-AR": "Argentina", "en-US": "Argentina", ca: "Argentina" },
+  España: { "es-AR": "España", "en-US": "Spain", ca: "Espanya" },
+  Inglaterra: { "es-AR": "Inglaterra", "en-US": "England", ca: "Anglaterra" },
+  Alemania: { "es-AR": "Alemania", "en-US": "Germany", ca: "Alemanya" },
+  Francia: { "es-AR": "Francia", "en-US": "France", ca: "França" },
+  Portugal: { "es-AR": "Portugal", "en-US": "Portugal", ca: "Portugal" },
+  Brasil: { "es-AR": "Brasil", "en-US": "Brazil", ca: "Brasil" }
+};
+
+const FULL_FALLBACK = [
+  { pais: "Argentina", equipos: ["Argentinos Juniors","Atlético Tucumán","Banfield","Barracas Central","Belgrano","Boca Juniors","Central Córdoba","Defensa y Justicia","Deportivo Riestra","Estudiantes de La Plata","Gimnasia y Esgrima La Plata","Godoy Cruz","Huracán","Independiente","Independiente Rivadavia","Instituto de Córdoba","Lanús","Newell’s Old Boys","Platense","Racing","River Plate","Rosario Central","San Lorenzo","San Martín de San Juan","Sarmiento","Talleres de Córdoba","Tigre","Unión de Santa Fe","Vélez Sarsfield"] },
+  { pais: "España", equipos: ["Alavés","Athletic Club","Atlético de Madrid","Barcelona","Celta de Vigo","Elche","Espanyol","Getafe","Girona","Levante","Mallorca","Osasuna","Rayo Vallecano","Real Betis","Real Madrid","Real Oviedo","Real Sociedad","Sevilla","Valencia","Villarreal"] },
+  { pais: "Inglaterra", equipos: ["Arsenal","Aston Villa","Bournemouth","Brentford","Brighton","Burnley","Chelsea","Crystal Palace","Everton","Fulham","Leeds United","Liverpool","Manchester City","Manchester United","Newcastle United","Nottingham Forest","Sunderland","Tottenham Hotspur","West Ham United","Wolverhampton Wanderers"] },
+  { pais: "Alemania", equipos: ["Augsburg","Union Berlin","Werder Bremen","Borussia Dortmund","Eintracht Frankfurt","Freiburg","Hamburg","Heidenheim","Hoffenheim","Köln","RB Leipzig","Bayer Leverkusen","Mainz","Borussia Mönchengladbach","Bayern München","St. Pauli","Stuttgart","Wolfsburg"] },
+  { pais: "Francia", equipos: ["Paris Saint-Germain","Marseille","Strasbourg","Lyon","Monaco","Lens","Lille","Brest","Nice","Nantes","Rennes","Lorient","Le Havre","Auxerre","Metz","Angers"] },
+  { pais: "Portugal", equipos: ["Porto","Sporting CP","Benfica","Braga","Gil Vicente","Moreirense","Famalicão","Vitória de Guimarães","Nacional","Alverca","Arouca","Rio Ave","Santa Clara","Casa Pia","Estrela da Amadora","Estoril","Tondela","AVS"] },
+  { pais: "Brasil", equipos: ["Flamengo","Palmeiras","Red Bull Bragantino","Fluminense","Ceará","Cruzeiro","Corinthians","Bahia","Internacional","Botafogo","São Paulo","Vasco da Gama","Juventude","Mirassol","Fortaleza","Atlético Mineiro","Vitória","Grêmio","Santos","Sport Recife"] }
 ];
 
-/* ====== Estado ====== */
+const normalize = (str) => str
+  .toUpperCase()
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^A-Z]/g, "");
+const normalizeChar = (ch) => normalize(ch).slice(0, 1);
+
 const state = {
-  data: [],            // [{pais, equipos:[...]}]
-  pool: [],            // [{pais, nombre, normalized, chars[]}]
+  data: [],
+  pool: [],
   current: null,
   masked: [],
   guessed: new Set(),
   lives: 6,
   score: 0,
-  streak: 0
+  streak: 0,
+  language: DEFAULT_LANGUAGE
 };
 
-/* ====== Elementos ====== */
 const els = {
   country: document.getElementById("countrySelect"),
   score: document.getElementById("score"),
@@ -101,357 +166,381 @@ const els = {
   toast: document.getElementById("toast"),
   redCard: document.getElementById("redCard"),
   confetti: document.getElementById("confetti"),
+  languageSwitcher: document.getElementById("languageSwitcher"),
+  scoreboard: document.querySelector(".scoreboard"),
+  matchPanel: document.querySelector(".match-panel"),
+  arena: document.querySelector(".arena"),
+  word: document.querySelector(".word"),
   ball: null,
   netRect: null
 };
 
-/* ====== Audio & Voz ====== */
+function t(key, params = {}) {
+  const template = I18N[state.language]?.[key] ?? I18N[DEFAULT_LANGUAGE]?.[key] ?? key;
+  return Object.entries(params).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, value), template);
+}
+
+function countryLabel(country) {
+  return COUNTRY_LABELS[country]?.[state.language] ?? country;
+}
+
 let audioCtx;
-function beep(freq=880, dur=0.08, type="square", vol=0.03){
-  try{
+function beep(freq = 880, dur = 0.08, type = "square", vol = 0.03) {
+  try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = type; o.frequency.value = freq;
-    g.gain.value = vol; o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime + dur);
-  }catch{}
+    const oscillator = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    oscillator.type = type;
+    oscillator.frequency.value = freq;
+    gain.gain.value = vol;
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + dur);
+  } catch {}
 }
 const sfx = {
-  good(){ beep(940, .06, "square", .05); },
-  bad(){ beep(240, .10, "sawtooth", .06); },
-  win(){ [880,990,1180].forEach((f,i)=>setTimeout(()=>beep(f,.10,"triangle",.06), i*120)); },
-  lose(){ [300,220,180].forEach((f,i)=>setTimeout(()=>beep(f,.14,"sawtooth",.07), i*140)); }
+  good() { beep(940, .06, "square", .05); },
+  bad() { beep(240, .10, "sawtooth", .06); },
+  win() { [880, 990, 1180].forEach((freq, i) => setTimeout(() => beep(freq, .10, "triangle", .06), i * 120)); },
+  lose() { [300, 220, 180].forEach((freq, i) => setTimeout(() => beep(freq, .14, "sawtooth", .07), i * 140)); }
 };
 
-// SpeechSynthesis (opcional)
 let voices = [];
-function setupVoices(){ try{ voices = window.speechSynthesis.getVoices(); }catch{} }
-if("speechSynthesis" in window){
+function setupVoices() {
+  try { voices = window.speechSynthesis.getVoices(); } catch {}
+}
+if ("speechSynthesis" in window) {
   setupVoices();
   window.speechSynthesis.onvoiceschanged = setupVoices;
 }
-function speak(text){
-  try{
-    if(!("speechSynthesis" in window)) return;
-    const u = new SpeechSynthesisUtterance(text);
-    const v = voices.find(v => /es(-|_)?(AR|ES|MX|CL|UY)?/i.test(v.lang)) || voices[0];
-    if(v) u.voice = v;
-    u.rate = 0.95; u.pitch = 0.95; u.volume = 1;
-    window.speechSynthesis.cancel();  // evita superposición si ya estaba hablando
-    window.speechSynthesis.speak(u);
-  }catch{}
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    const preferred = I18N[state.language].locale;
+    const base = preferred.split("-")[0];
+    const voice = voices.find((item) => item.lang.toLowerCase() === preferred.toLowerCase())
+      || voices.find((item) => item.lang.toLowerCase().startsWith(base.toLowerCase()))
+      || voices[0];
+    if (voice) utterance.voice = voice;
+    utterance.lang = preferred;
+    utterance.rate = .96;
+    utterance.pitch = .96;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  } catch {}
 }
 
-/* ====== Confetti ====== */
-const FORTIN = 1905;           // guiño inocuo
-const FORTIN_BLUE = "#0038a8"; // azul Vélez
-function throwConfetti(){
+function throwConfetti() {
   els.confetti.innerHTML = "";
-  const colors = ["#22c55e","#16a34a","#34d399","#86efac","#facc15","#fb7185","#60a5fa"];
-  // confetti base
-  for(let i=0;i<140;i++){
-    const d = document.createElement("div");
-    d.className = "confetti";
-    d.style.left = (Math.random()*96+2)+"%";
-    d.style.top = (Math.random()*10)+"%";
-    d.style.background = colors[Math.floor(Math.random()*colors.length)];
-    d.style.animationDelay = (Math.random()*0.4)+"s";
-    d.style.transform = `translateY(-${Math.random()*60}px) rotate(${Math.random()*180}deg)`;
-    els.confetti.appendChild(d);
+  const colors = ["#1ca5ee", "#073b75", "#f4fbff", "#9be34b", "#ffd54a", "#20b968"];
+  for (let i = 0; i < 120; i += 1) {
+    const piece = document.createElement("div");
+    piece.className = "confetti";
+    piece.style.left = `${Math.random() * 96 + 2}%`;
+    piece.style.top = `${Math.random() * 8}%`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = `${Math.random() * .35}s`;
+    piece.style.transform = `translateY(-${Math.random() * 60}px) rotate(${Math.random() * 180}deg)`;
+    els.confetti.appendChild(piece);
   }
-  // guiño: 3 papeles azules extra (Vélez)
-  for(let k=0;k<3;k++){
-    const d = document.createElement("div");
-    d.className = "confetti";
-    d.style.left = (Math.random()*96+2)+"%";
-    d.style.top = (Math.random()*10)+"%";
-    d.style.background = FORTIN_BLUE;
-    d.style.animationDelay = (Math.random()*0.4)+"s";
-    d.style.transform = `translateY(-${Math.random()*60}px) rotate(${Math.random()*180}deg)`;
-    els.confetti.appendChild(d);
-  }
-  setTimeout(()=>els.confetti.innerHTML="", 2200 + (FORTIN % 5)); // (1905%5==0) → sin efecto
+  setTimeout(() => { els.confetti.innerHTML = ""; }, 2200);
 }
 
-/* ====== UI helpers ====== */
-let toastTimer=null;
-function say(msg){
-  els.toast.textContent = msg;
+let toastTimer = null;
+function say(message) {
+  els.toast.textContent = message;
   els.toast.style.opacity = 1;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(()=> els.toast.style.opacity = 0, 1600);
+  toastTimer = setTimeout(() => { els.toast.style.opacity = .72; }, 1900);
 }
-function loadPersist(){
-  try{
-    const saved = JSON.parse(localStorage.getItem("ahorcabol")||"{}");
-    if(Number.isFinite(saved.score)) state.score = saved.score;
-    if(Number.isFinite(saved.streak)) state.streak = saved.streak;
-  }catch{}
+
+function loadPersist() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    if (Number.isFinite(saved.score)) state.score = saved.score;
+    if (Number.isFinite(saved.streak)) state.streak = saved.streak;
+    if (LANGUAGES.includes(saved.language)) state.language = saved.language;
+  } catch {}
 }
-function savePersist(){
-  localStorage.setItem("ahorcabol", JSON.stringify({score:state.score, streak:state.streak}));
+function savePersist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ score: state.score, streak: state.streak, language: state.language }));
 }
-function renderStats(){
+
+function renderStats() {
   bump(els.score, state.score);
   bump(els.streak, state.streak);
   bump(els.lives, state.lives);
 }
-function bump(el, val){
-  el.textContent = val;
+function bump(el, value) {
+  el.textContent = value;
   el.classList.remove("bump");
-  void el.offsetWidth; // reflow para reiniciar anim
+  void el.offsetWidth;
   el.classList.add("bump");
 }
 
-/* ====== Teclado virtual ====== */
-function buildKeyboard(){
+function buildKeyboard() {
   els.keyboard.innerHTML = "";
-  KB_ROWS.forEach(row=>{
-    [...row].forEach(ch=>{
-      const b = document.createElement("button");
-      b.className = "key";
-      b.textContent = ch;
-      b.dataset.k = ch;
-      b.addEventListener("click", ()=> onGuess(ch));
-      els.keyboard.appendChild(b);
+  KB_ROWS.forEach((row) => {
+    [...row].forEach((character) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "key";
+      button.textContent = character;
+      button.dataset.k = character;
+      button.addEventListener("click", () => onGuess(character));
+      els.keyboard.appendChild(button);
     });
   });
 }
-function markKey(ch, good){
-  const k = [...els.keyboard.querySelectorAll(".key")].find(k=>k.dataset.k===ch);
-  if(!k) return;
-  k.classList.add("used");
-  k.classList.add(good ? "good" : "bad");
+function markKey(rawCharacter, good) {
+  const normalized = normalizeChar(rawCharacter);
+  els.keyboard.querySelectorAll(".key").forEach((key) => {
+    if (normalizeChar(key.dataset.k) === normalized) {
+      key.classList.add("used", good ? "good" : "bad");
+    }
+  });
 }
 
-/* ====== Arco según vidas ====== */
-function updateGoalGraphics(){
-  const misses = 6 - state.lives; // 0..6
-  for(let i=1;i<=6;i++){
-    els.goal.querySelectorAll(`.s${i}`).forEach(n=>{
-      n.classList.toggle("show", misses>=i);
-    });
+function updateGoalGraphics() {
+  const misses = 6 - state.lives;
+  for (let i = 1; i <= 6; i += 1) {
+    els.goal.querySelectorAll(`.s${i}`).forEach((node) => node.classList.toggle("show", misses >= i));
   }
-  els.redCard.classList.toggle("show", state.lives<=0);
+  els.redCard.classList.toggle("show", state.lives <= 0);
+}
+function setBallAnim(name) {
+  ["idle", "tap", "post", "kick"].forEach((className) => els.ball?.classList.remove(className));
+  if (!els.ball) return;
+  void els.ball.offsetWidth;
+  if (name) els.ball.classList.add(name);
+}
+function goalShake() {
+  els.goal.classList.add("shake");
+  setTimeout(() => els.goal.classList.remove("shake"), 320);
 }
 
-/* ====== Animaciones pelota ====== */
-function setBallAnim(name){ // 'idle'|'tap'|'post'|'kick'|null
-  const cls = ["idle","tap","post","kick"];
-  cls.forEach(c => els.ball.classList.remove(c));
-  void els.ball.offsetWidth;         // reset de anim
-  if(name) els.ball.classList.add(name);
-}
-function goalShake(){ els.goal.classList.add("shake"); setTimeout(()=>els.goal.classList.remove("shake"), 320); }
-
-/* ====== Pool & palabra ====== */
-function rebuildPool(){
+function rebuildPool() {
   const selected = els.country.value;
   const pool = [];
-  for(const group of state.data){
-    if(selected!=="TODOS" && group.pais!==selected) continue;
-    for(const name of group.equipos){
-      const normalized = normalize(name);
-      const chars = [...name];
-      pool.push({ pais: group.pais, nombre: name, normalized, chars });
-    }
-  }
+  state.data.forEach((group) => {
+    if (selected !== "ALL" && group.pais !== selected) return;
+    group.equipos.forEach((name) => pool.push({ pais: group.pais, nombre: name, chars: [...name] }));
+  });
   state.pool = pool;
 }
-function pickWord(){
-  if(!state.pool.length){ say("No hay equipos en este filtro"); return null; }
-  const idx = Math.floor(Math.random()*state.pool.length);
-  return state.pool[idx];
-}
-function setupMasked(){
-  const tiles = [];
-  for(const ch of state.current.chars){
-    if(/\p{L}/u.test(ch)){
-      tiles.push({char:ch, shown:false});
-    }else{
-      tiles.push({char:ch, shown:true});
-    }
+function pickWord() {
+  if (!state.pool.length) {
+    say(t("noTeams"));
+    return null;
   }
-  state.masked = tiles;
+  return state.pool[Math.floor(Math.random() * state.pool.length)];
+}
+function setupMasked() {
+  state.masked = state.current.chars.map((character) => ({ character, shown: !/\p{L}/u.test(character) }));
   renderMasked();
 }
-function renderMasked(){
+function renderMasked() {
   els.masked.innerHTML = "";
-  for(const t of state.masked){
-    const div = document.createElement("div");
-    const isSpace = t.char===" " || t.char==="\u00A0";
-    div.className = "tile " + (t.shown ? "revealed" : "") + (isSpace ? " space":"");
-    div.textContent = t.shown ? t.char : "—";
-    els.masked.appendChild(div);
-  }
+  state.masked.forEach((item) => {
+    const tile = document.createElement("div");
+    const isSpace = item.character === " " || item.character === "\u00A0";
+    tile.className = `tile${item.shown ? " revealed" : ""}${isSpace ? " space" : ""}`;
+    tile.textContent = item.shown ? item.character : "—";
+    els.masked.appendChild(tile);
+  });
 }
-function reveal(letter){
+function reveal(letter) {
   let hits = 0;
-  for(const t of state.masked){
-    if(!t.shown && /\p{L}/u.test(t.char)){
-      if(normalizeChar(t.char) === letter){
-        t.shown = true;
-        hits++;
-      }
+  state.masked.forEach((item) => {
+    if (!item.shown && /\p{L}/u.test(item.character) && normalizeChar(item.character) === letter) {
+      item.shown = true;
+      hits += 1;
     }
-  }
-  if(hits>0) renderMasked();
+  });
+  if (hits) renderMasked();
   return hits;
 }
-function isSolved(){ return state.masked.every(t => t.shown); }
+function isSolved() { return state.masked.every((item) => item.shown); }
 
-/* ====== Pista ====== */
-function useHint(){
-  if(state.lives<=1){ say("No da para más pistas…"); return; }
-  const hiddenIdxs = state.masked
-    .map((t,i)=>({t,i}))
-    .filter(o => !o.t.shown && /\p{L}/u.test(o.t.char));
-  if(!hiddenIdxs.length){ say("¡Ya está todo revelado!"); return; }
-  const pick = hiddenIdxs[Math.floor(Math.random()*hiddenIdxs.length)];
-  const n = normalizeChar(pick.t.char);
-  state.lives--; renderStats(); updateGoalGraphics();
-  markKey(pick.t.char.toUpperCase()==="Ñ" ? "Ñ" : n, true);
-  state.guessed.add(n);     // para que no sume puntos si luego la tocan
-  reveal(n);
-  say("Te tiro una bocha…");
+function useHint() {
+  if (state.lives <= 1) { say(t("noMoreHints")); return; }
+  const hidden = state.masked.filter((item) => !item.shown && /\p{L}/u.test(item.character));
+  if (!hidden.length) { say(t("alreadyRevealed")); return; }
+  const item = hidden[Math.floor(Math.random() * hidden.length)];
+  const normalized = normalizeChar(item.character);
+  state.lives -= 1;
+  state.guessed.add(normalized);
+  renderStats();
+  updateGoalGraphics();
+  markKey(item.character, true);
+  reveal(normalized);
+  say(t("hintMessage"));
   sfx.good();
   setBallAnim("tap");
-  if(isSolved()) handleWin();
+  if (isSolved()) handleWin();
 }
 
-/* ====== Rendir ====== */
-function giveUp(){
-  state.lives = 0; renderStats(); updateGoalGraphics();
-  for(const t of state.masked){ t.shown = true; }
-  renderMasked();
-  say(`Era: ${state.current.nombre}`);
-  sfx.lose();
+function giveUp() {
+  if (!state.current) return;
+  state.lives = 0;
   state.streak = 0;
+  state.masked.forEach((item) => { item.shown = true; });
+  renderStats();
+  updateGoalGraphics();
+  renderMasked();
+  say(t("was", { team: state.current.nombre }));
+  sfx.lose();
   savePersist();
 }
 
-/* ====== Guess ====== */
-function onGuess(rawCh){
-  const ch = normalizeChar(rawCh);
-  if(!ch) return;
-  if(state.guessed.has(ch)) return;
-  state.guessed.add(ch);
-
-  const keyLabel = rawCh.toUpperCase();
-  const hits = reveal(ch);
-
-  if(hits>0){
-    markKey(keyLabel, true);
+function onGuess(rawCharacter) {
+  if (!state.current || state.lives <= 0 || isSolved()) return;
+  const character = normalizeChar(rawCharacter);
+  if (!character || state.guessed.has(character)) return;
+  state.guessed.add(character);
+  const hits = reveal(character);
+  if (hits > 0) {
+    markKey(rawCharacter, true);
     state.score += 100 * hits;
     renderStats();
-    say("¡Goool!");
-    speak("¡Gooooool!");
+    say(t("goal"));
+    speak(t("speechGoal"));
     sfx.good();
     setBallAnim("tap");
-    if(isSolved()){
-      handleWin();
-    }
-  }else{
-    markKey(keyLabel, false);
-    state.lives--;
-    renderStats();
-    updateGoalGraphics();
-    say("¡Fuera!");
-    speak("¡Fuera!");
-    sfx.bad();
-    goalShake();
-    setBallAnim("post");
-    if(state.lives<=0){
-      say(`Game over. Era: ${state.current.nombre}`);
-      sfx.lose();
-      state.streak = 0;
-      for(const t of state.masked){ t.shown = true; }
-      renderMasked();
-      savePersist();
-    }
+    if (isSolved()) handleWin();
+    return;
+  }
+
+  markKey(rawCharacter, false);
+  state.lives -= 1;
+  renderStats();
+  updateGoalGraphics();
+  say(t("out"));
+  speak(t("speechOut"));
+  sfx.bad();
+  goalShake();
+  setBallAnim("post");
+  if (state.lives <= 0) {
+    state.streak = 0;
+    state.masked.forEach((item) => { item.shown = true; });
+    renderMasked();
+    say(t("gameOver", { team: state.current.nombre }));
+    sfx.lose();
+    savePersist();
   }
 }
 
-/* ====== Win ====== */
-function handleWin(){
-  say("¡GOLAZO! 🎉");
-  speak("¡GOLAZO!");
+function handleWin() {
+  say(t("greatGoal"));
+  speak(t("speechWin"));
   sfx.win();
   throwConfetti();
   setBallAnim("kick");
-  if(els.netRect){
-    els.netRect.classList.remove("ripple"); void els.netRect.offsetWidth; els.netRect.classList.add("ripple");
+  if (els.netRect) {
+    els.netRect.classList.remove("ripple");
+    void els.netRect.offsetWidth;
+    els.netRect.classList.add("ripple");
   }
-  state.score += 500 + state.lives*50;
+  state.score += 500 + state.lives * 50;
   state.streak += 1;
   renderStats();
   savePersist();
 }
 
-/* ====== Teclado físico ====== */
-function onKeydown(e){
-  const k = e.key;
-  if(/^[a-zA-ZáéíóúüÁÉÍÓÚÜñÑ]$/.test(k)){
-    onGuess(k);
-  }else if(k==="Enter"){
-    newGame();
-  }
+function onKeydown(event) {
+  if (/^[a-zA-ZáéíóúüÁÉÍÓÚÜñÑçÇ]$/.test(event.key)) onGuess(event.key);
+  else if (event.key === "Enter") newGame();
 }
 
-/* ====== Nuevo partido ====== */
-function newGame(){
+function newGame() {
   state.lives = 6;
   state.guessed.clear();
   renderStats();
-  els.keyboard.querySelectorAll(".key").forEach(k=>k.classList.remove("used","good","bad"));
+  els.keyboard.querySelectorAll(".key").forEach((key) => key.classList.remove("used", "good", "bad"));
   updateGoalGraphics();
   setBallAnim("idle");
   state.current = pickWord();
-  if(!state.current) return;
+  if (!state.current) return;
   setupMasked();
-  say(`Rival: ${state.current.pais}`);
+  say(t("rival", { country: countryLabel(state.current.pais) }));
 }
 
-/* ====== Cargar datos ====== */
-async function loadData(){
-  try{
-    const r = await fetch("teamlist.json", {cache:"no-cache"});
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const j = await r.json();
-    if(!Array.isArray(j)) throw new Error("Formato inesperado");
-    state.data = j;
-  }catch(err){
-    console.warn("No se pudo leer teamlist.json. Usando fallback completo.", err);
-    state.data = FULL_FALLBACK;  // incluye los 7 países
+async function loadData() {
+  try {
+    const response = await fetch("teamlist.json", { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) throw new Error(t("formatWarning"));
+    state.data = data;
+  } catch (error) {
+    console.warn(t("dataWarning"), error);
+    state.data = FULL_FALLBACK;
   }
 }
 
-/* ====== Países → select (TODOS + todos los del JSON, orden alfabético) ====== */
-function fillCountrySelect(){
-  const countries = Array.from(new Set(state.data.map(d=>d.pais))).sort((a,b)=>a.localeCompare(b,"es"));
-  const currentValue = els.country.value || "TODOS";
-  els.country.innerHTML =
-    `<option value="TODOS">Todos</option>` +
-    countries.map(p=>`<option value="${p}">${p}</option>`).join("");
-  if(currentValue && (currentValue==="TODOS" || countries.includes(currentValue))){
-    els.country.value = currentValue;
-  }
+function fillCountrySelect() {
+  const currentValue = els.country.value || "ALL";
+  const countries = Array.from(new Set(state.data.map((group) => group.pais)))
+    .sort((a, b) => countryLabel(a).localeCompare(countryLabel(b), I18N[state.language].locale));
+  els.country.innerHTML = "";
+  const allOption = document.createElement("option");
+  allOption.value = "ALL";
+  allOption.textContent = t("all");
+  els.country.appendChild(allOption);
+  countries.forEach((country) => {
+    const option = document.createElement("option");
+    option.value = country;
+    option.textContent = countryLabel(country);
+    els.country.appendChild(option);
+  });
+  els.country.value = currentValue === "ALL" || countries.includes(currentValue) ? currentValue : "ALL";
 }
 
-/* ====== INIT ====== */
-(async function init(){
+function applyLanguage(language, { persist = true } = {}) {
+  if (!LANGUAGES.includes(language)) return;
+  state.language = language;
+  document.documentElement.lang = I18N[language].htmlLang;
+  document.title = t("title");
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+  els.languageSwitcher.setAttribute("aria-label", t("languageSwitcher"));
+  els.scoreboard.setAttribute("aria-label", t("scoreboard"));
+  els.matchPanel.setAttribute("aria-label", t("gameControls"));
+  els.arena.setAttribute("aria-label", t("arenaLabel"));
+  els.word.setAttribute("aria-label", t("hiddenTeam"));
+  els.masked.setAttribute("aria-label", t("hiddenTeam"));
+  els.keyboard.setAttribute("aria-label", t("keyboard"));
+  els.languageSwitcher.querySelectorAll(".language-btn").forEach((button) => {
+    const active = button.dataset.lang === language;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  fillCountrySelect();
+  rebuildPool();
+  if (state.current) say(t("rival", { country: countryLabel(state.current.pais) }));
+  if (persist) savePersist();
+}
+
+(async function init() {
   loadPersist();
-  renderStats();
   buildKeyboard();
-  await loadData();                 // carga JSON o fallback completo
+  await loadData();
   els.ball = document.getElementById("ball");
   els.netRect = document.querySelector(".net-rect");
-  fillCountrySelect();              // verás Argentina, España, Inglaterra, Alemania, Francia, Portugal, Brasil
+  fillCountrySelect();
+  applyLanguage(state.language, { persist: false });
   rebuildPool();
+  renderStats();
   newGame();
 
-  els.country.addEventListener("change", ()=>{ rebuildPool(); newGame(); });
+  els.languageSwitcher.addEventListener("click", (event) => {
+    const button = event.target.closest(".language-btn");
+    if (button) applyLanguage(button.dataset.lang);
+  });
+  els.country.addEventListener("change", () => { rebuildPool(); newGame(); });
   els.newGame.addEventListener("click", newGame);
   els.hint.addEventListener("click", useHint);
   els.giveUp.addEventListener("click", giveUp);
