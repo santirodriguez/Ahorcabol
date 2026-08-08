@@ -20,9 +20,7 @@ Ahorcabol contributes spelling. Nobody asked, but here we are.
 
 ## Play
 
-**Development / test build:** https://santiagorodriguez.com/Ahorcabol/
-
-It may be ahead of the latest stable GitHub release. Use accordingly; blind faith belongs in transfer windows.
+**Play online:** https://santiagorodriguez.com/Ahorcabol/
 
 ## What it does
 
