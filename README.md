@@ -55,7 +55,6 @@ Ahorcabol/
 ├── assets/
 │   └── branding/
 │       ├── ahorcabol-logo-1.svg
-│       ├── logo-adaptation.css
 │       └── senyera.svg
 ├── index.html
 ├── styles.css
@@ -64,6 +63,8 @@ Ahorcabol/
 ├── screenshot.png
 └── LICENSE
 ```
+
+The runtime keeps the same small-file approach as the original project: markup in `index.html`, presentation in `styles.css`, behavior in `script.js`, and club data in `teamlist.json`. No extra stylesheet is required just to make the logo behave.
 
 ## Run locally
 
@@ -97,7 +98,7 @@ The country selector is generated from these groups. UI labels are translated se
 
 ## Browser behavior
 
-Ahorcabol is designed as a standard responsive static site. Optional audio and voice features depend on browser support and may require an initial user interaction before playback is allowed. Browsers have rules. Occasionally even football does.
+Ahorcabol targets current Firefox, Chrome and Safari with standard HTML, CSS and JavaScript. Optional audio and voice features depend on browser support and may require an initial user interaction before playback is allowed. Browsers have rules. Occasionally even football does.
 
 ## License
 
