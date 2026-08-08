@@ -12,7 +12,8 @@ A lightweight football-themed hangman game for the browser. Guess club names, bu
 
 ## Highlights
 
-- Argentine Spanish by default, with one-click switching to US English and Catalan.
+- Spanish by default, with one-click switching to English and Catalan.
+- Language buttons use the Argentina flag for Spanish, the United States flag for English, and the Catalan Senyera for Catalan.
 - Seven football countries/leagues in the current team pool.
 - Physical and on-screen keyboard support.
 - Score, streak and lives with `localStorage` persistence.
@@ -27,9 +28,9 @@ A lightweight football-themed hangman game for the browser. Guess club names, bu
 
 The interface ships with:
 
-- Argentine Spanish (`es-AR`) — default.
-- US English (`en-US`).
-- Catalan (`ca`).
+- Spanish (`es-AR`) — default, Argentina flag.
+- English (`en-US`) — United States flag.
+- Catalan (`ca`) — Catalan Senyera.
 
 The selected language is remembered in `localStorage`. Club names are kept as stable football names rather than maintaining translated copies of the team database.
 
