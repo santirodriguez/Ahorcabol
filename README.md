@@ -23,7 +23,9 @@ No accounts. No ads. No framework. No build step. Just football, letters, and on
 - Hint and give-up controls with explicit round-end states
 - Shuffle-bag selection to avoid immediate team repeats
 - Country / league filtering
-- Spanish by default, plus English and Catalan
+- 🇦🇷 **Español** by default
+- 🇺🇸 **English**
+- <img src="assets/branding/senyera.svg" alt="Senyera" width="22"> **Català**
 - Physical and on-screen keyboard support, including a distinct `Ñ`
 - Responsive three-row keyboard on desktop and mobile
 - Lightweight goal, post, net and celebration animations
@@ -75,7 +77,7 @@ There is no build command. Society remains functional.
 
 [Santiago Rodriguez](https://santiagorodriguez.com)
 
-[Donate](https://santiagorodriguez.com/donate)
+<a href="https://santiagorodriguez.com/donate"><img src="assets/branding/donate.svg" alt="Donate" height="52" /></a>
 
 ## License
 
