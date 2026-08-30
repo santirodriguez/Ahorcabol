@@ -16,8 +16,6 @@ const ROUND = Object.freeze({
   ERROR: "error"
 });
 
-const RESTORABLE_ROUNDS = new Set([ROUND.PLAYING, ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP]);
-
 const I18N = {
   "es-AR": {
     htmlLang: "es-AR",
@@ -72,7 +70,7 @@ const I18N = {
     wonSummary: "Era {team}. Sumaste la ronda.",
     lostSummary: "El equipo era {team}. La racha vuelve a cero.",
     gaveUpSummary: "El equipo era {team}. La racha vuelve a cero.",
-    voiceUnavailable: "La voz local no está disponible en este navegador.",
+    voiceUnavailable: "La voz no está disponible en este navegador.",
     sfxUnavailable: "El audio no está disponible en este navegador.",
     speechGoal: "¡Gooooool!",
     speechOut: "¡Fuera!",
@@ -133,7 +131,7 @@ const I18N = {
     wonSummary: "It was {team}. Round complete.",
     lostSummary: "The team was {team}. Your streak is back to zero.",
     gaveUpSummary: "The team was {team}. Your streak is back to zero.",
-    voiceUnavailable: "A local voice is not available in this browser.",
+    voiceUnavailable: "Voice is not available in this browser.",
     sfxUnavailable: "Audio is not available in this browser.",
     speechGoal: "Goal!",
     speechOut: "Wide!",
@@ -194,7 +192,7 @@ const I18N = {
     wonSummary: "Era {team}. Ronda completada.",
     lostSummary: "L'equip era {team}. La ratxa torna a zero.",
     gaveUpSummary: "L'equip era {team}. La ratxa torna a zero.",
-    voiceUnavailable: "La veu local no està disponible en aquest navegador.",
+    voiceUnavailable: "La veu no està disponible en aquest navegador.",
     sfxUnavailable: "L'àudio no està disponible en aquest navegador.",
     speechGoal: "Gol!",
     speechOut: "Fora!",
@@ -216,31 +214,83 @@ const COUNTRY_LABELS = {
 };
 
 const SPOKEN_LETTERS = {
-  "es-AR": { A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge", H: "hache", I: "i", J: "jota", K: "ka", L: "ele", M: "eme", N: "ene", "Ñ": "eñe", O: "o", P: "pe", Q: "cu", R: "erre", S: "ese", T: "te", U: "u", V: "uve", W: "doble uve", X: "equis", Y: "ye", Z: "zeta" },
-  "en-US": { A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I", J: "J", K: "K", L: "L", M: "M", N: "N", "Ñ": "enye", O: "O", P: "P", Q: "Q", R: "R", S: "S", T: "T", U: "U", V: "V", W: "W", X: "X", Y: "Y", Z: "Z" },
-  ca: { A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efa", G: "ge", H: "hac", I: "i", J: "jota", K: "ca", L: "ela", M: "ema", N: "ena", "Ñ": "enye", O: "o", P: "pe", Q: "cu", R: "erra", S: "essa", T: "te", U: "u", V: "ve baixa", W: "ve doble", X: "ics", Y: "i grega", Z: "zeta" }
+  "es-AR": {
+    A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge", H: "hache",
+    I: "i", J: "jota", K: "ka", L: "ele", M: "eme", N: "ene", "Ñ": "eñe", O: "o",
+    P: "pe", Q: "cu", R: "erre", S: "ese", T: "te", U: "u", V: "uve",
+    W: "doble uve", X: "equis", Y: "ye", Z: "zeta"
+  },
+  "en-US": {
+    A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I",
+    J: "J", K: "K", L: "L", M: "M", N: "N", "Ñ": "enye", O: "O", P: "P", Q: "Q",
+    R: "R", S: "S", T: "T", U: "U", V: "V", W: "W", X: "X", Y: "Y", Z: "Z"
+  },
+  ca: {
+    A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efa", G: "ge", H: "hac",
+    I: "i", J: "jota", K: "ca", L: "ela", M: "ema", N: "ena", "Ñ": "enye", O: "o",
+    P: "pe", Q: "cu", R: "erra", S: "essa", T: "te", U: "u", V: "ve baixa",
+    W: "ve doble", X: "ics", Y: "i grega", Z: "zeta"
+  }
 };
 
 const state = {
-  data: [], pool: [], bag: [], bagKey: "", current: null, previousTeamName: null,
-  masked: [], guessed: new Set(), lives: MAX_LIVES, score: 0, streak: 0, bestStreak: 0,
-  roundStartScore: 0, language: DEFAULT_LANGUAGE, country: "ALL", sfxEnabled: true,
-  voiceEnabled: false, roundStatus: ROUND.LOADING, savedRound: null
+  data: [],
+  pool: [],
+  bag: [],
+  bagKey: "",
+  current: null,
+  previousTeamName: null,
+  masked: [],
+  guessed: new Set(),
+  lives: MAX_LIVES,
+  score: 0,
+  streak: 0,
+  bestStreak: 0,
+  roundStartScore: 0,
+  language: DEFAULT_LANGUAGE,
+  country: "ALL",
+  sfxEnabled: true,
+  voiceEnabled: false,
+  roundStatus: ROUND.LOADING,
+  savedRound: null
 };
 
 const els = {
-  metaDescription: document.getElementById("metaDescription"), country: document.getElementById("countrySelect"),
-  score: document.getElementById("score"), streak: document.getElementById("streak"), bestStreak: document.getElementById("bestStreak"),
-  countryBadge: document.getElementById("countryBadge"), livesLabel: document.getElementById("livesLabel"), lifePips: document.getElementById("lifePips"),
-  masked: document.getElementById("maskedWord"), keyboard: document.getElementById("keyboard"), hint: document.getElementById("hintBtn"),
-  giveUp: document.getElementById("giveUpBtn"), nextGame: document.getElementById("nextGameBtn"), retryData: document.getElementById("retryDataBtn"),
-  goal: document.getElementById("goalSvg"), toast: document.getElementById("toast"), redCard: document.getElementById("redCard"),
-  confetti: document.getElementById("confetti"), languageSwitcher: document.getElementById("languageSwitcher"), audioControls: document.getElementById("audioControls"),
-  sfxToggle: document.getElementById("sfxToggle"), voiceToggle: document.getElementById("voiceToggle"), scoreboard: document.getElementById("scoreboard"),
-  matchPanel: document.getElementById("matchPanel"), arena: document.getElementById("arena"), word: document.getElementById("wordSection"),
-  playActions: document.getElementById("playActions"), resultPanel: document.getElementById("resultPanel"), resultEyebrow: document.getElementById("resultEyebrow"),
-  resultTitle: document.getElementById("resultTitle"), resultSummary: document.getElementById("resultSummary"), roundPoints: document.getElementById("roundPoints"),
-  resultStreak: document.getElementById("resultStreak"), dataErrorPanel: document.getElementById("dataErrorPanel"), ball: document.getElementById("ball"),
+  metaDescription: document.getElementById("metaDescription"),
+  country: document.getElementById("countrySelect"),
+  score: document.getElementById("score"),
+  streak: document.getElementById("streak"),
+  bestStreak: document.getElementById("bestStreak"),
+  countryBadge: document.getElementById("countryBadge"),
+  livesLabel: document.getElementById("livesLabel"),
+  lifePips: document.getElementById("lifePips"),
+  masked: document.getElementById("maskedWord"),
+  keyboard: document.getElementById("keyboard"),
+  hint: document.getElementById("hintBtn"),
+  giveUp: document.getElementById("giveUpBtn"),
+  nextGame: document.getElementById("nextGameBtn"),
+  retryData: document.getElementById("retryDataBtn"),
+  goal: document.getElementById("goalSvg"),
+  toast: document.getElementById("toast"),
+  redCard: document.getElementById("redCard"),
+  confetti: document.getElementById("confetti"),
+  languageSwitcher: document.getElementById("languageSwitcher"),
+  audioControls: document.getElementById("audioControls"),
+  sfxToggle: document.getElementById("sfxToggle"),
+  voiceToggle: document.getElementById("voiceToggle"),
+  scoreboard: document.getElementById("scoreboard"),
+  matchPanel: document.getElementById("matchPanel"),
+  arena: document.getElementById("arena"),
+  word: document.getElementById("wordSection"),
+  playActions: document.getElementById("playActions"),
+  resultPanel: document.getElementById("resultPanel"),
+  resultEyebrow: document.getElementById("resultEyebrow"),
+  resultTitle: document.getElementById("resultTitle"),
+  resultSummary: document.getElementById("resultSummary"),
+  roundPoints: document.getElementById("roundPoints"),
+  resultStreak: document.getElementById("resultStreak"),
+  dataErrorPanel: document.getElementById("dataErrorPanel"),
+  ball: document.getElementById("ball"),
   netRect: document.querySelector(".net-rect")
 };
 
@@ -248,15 +298,25 @@ const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
 
 function t(key, params = {}) {
   const template = I18N[state.language]?.[key] ?? I18N[DEFAULT_LANGUAGE]?.[key] ?? key;
-  return Object.entries(params).reduce((text, [name, value]) => text.replaceAll(`{${name}}`, String(value)), template);
+  return Object.entries(params).reduce(
+    (text, [name, value]) => text.replaceAll(`{${name}}`, String(value)),
+    template
+  );
 }
 
-function countryLabel(country) { return COUNTRY_LABELS[country]?.[state.language] ?? country; }
+function countryLabel(country) {
+  return COUNTRY_LABELS[country]?.[state.language] ?? country;
+}
 
 function normalizeLetter(character) {
   const upper = String(character).toLocaleUpperCase("es");
   if (upper === "Ñ") return "Ñ";
-  return upper.normalize("NFD").replace(/\p{M}/gu, "").replace(/[^A-Z]/g, "").slice(0, 1);
+
+  return upper
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^A-Z]/g, "")
+    .slice(0, 1);
 }
 
 function safeReadStorage() {
@@ -268,23 +328,28 @@ function safeReadStorage() {
   }
 }
 
-function validNonNegative(value) { return Number.isFinite(value) && value >= 0; }
-
 function loadPersist() {
   const saved = safeReadStorage();
-  if (validNonNegative(saved.score)) state.score = saved.score;
-  if (validNonNegative(saved.streak)) state.streak = saved.streak;
-  if (validNonNegative(saved.bestStreak)) state.bestStreak = saved.bestStreak;
+
+  if (Number.isFinite(saved.score) && saved.score >= 0) state.score = saved.score;
+  if (Number.isFinite(saved.streak) && saved.streak >= 0) state.streak = saved.streak;
+  if (Number.isFinite(saved.bestStreak) && saved.bestStreak >= 0) state.bestStreak = saved.bestStreak;
   if (LANGUAGES.includes(saved.language)) state.language = saved.language;
   if (typeof saved.country === "string") state.country = saved.country;
   if (typeof saved.sfxEnabled === "boolean") state.sfxEnabled = saved.sfxEnabled;
   if (typeof saved.voiceEnabled === "boolean") state.voiceEnabled = saved.voiceEnabled;
-  if (saved.version === STORAGE_VERSION && saved.round && typeof saved.round === "object") state.savedRound = saved.round;
+  if (saved.version === STORAGE_VERSION && saved.round && typeof saved.round === "object") {
+    state.savedRound = saved.round;
+  }
+
   state.bestStreak = Math.max(state.bestStreak, state.streak);
 }
 
-function roundSnapshot() {
-  if (!state.current || !RESTORABLE_ROUNDS.has(state.roundStatus)) return null;
+function currentRoundSnapshot() {
+  if (!state.current || ![ROUND.PLAYING, ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) {
+    return null;
+  }
+
   return {
     team: state.current.nombre,
     teamCountry: state.current.pais,
@@ -297,45 +362,76 @@ function roundSnapshot() {
 
 function savePersist() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      version: STORAGE_VERSION,
-      score: state.score, streak: state.streak, bestStreak: state.bestStreak,
-      language: state.language, country: state.country,
-      sfxEnabled: state.sfxEnabled, voiceEnabled: state.voiceEnabled,
-      round: roundSnapshot()
-    }));
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: STORAGE_VERSION,
+        score: state.score,
+        streak: state.streak,
+        bestStreak: state.bestStreak,
+        language: state.language,
+        country: state.country,
+        sfxEnabled: state.sfxEnabled,
+        voiceEnabled: state.voiceEnabled,
+        round: currentRoundSnapshot()
+      })
+    );
   } catch {
     // Persistence is optional. The game remains playable without it.
   }
 }
 
 let audioCtx;
-function audioSupported() { return Boolean(window.AudioContext || window.webkitAudioContext); }
+function audioSupported() {
+  return Boolean(window.AudioContext || window.webkitAudioContext);
+}
+
 function beep(freq = 880, duration = 0.08, type = "square", volume = 0.03) {
   if (!state.sfxEnabled || !audioSupported()) return;
+
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === "suspended") audioCtx.resume();
+
     const oscillator = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    oscillator.type = type; oscillator.frequency.value = freq; gain.gain.value = volume;
-    oscillator.connect(gain); gain.connect(audioCtx.destination); oscillator.start(); oscillator.stop(audioCtx.currentTime + duration);
-  } catch {}
+    oscillator.type = type;
+    oscillator.frequency.value = freq;
+    gain.gain.value = volume;
+    oscillator.connect(gain);
+    gain.connect(audioCtx.destination);
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + duration);
+  } catch {
+    // Sound effects are non-essential.
+  }
 }
 
 const sfx = {
   good() { beep(940, 0.06, "square", 0.045); },
   bad() { beep(240, 0.1, "sawtooth", 0.05); },
-  win() { [880, 990, 1180].forEach((freq, index) => window.setTimeout(() => beep(freq, 0.1, "triangle", 0.05), index * 110)); },
-  lose() { [300, 220, 180].forEach((freq, index) => window.setTimeout(() => beep(freq, 0.13, "sawtooth", 0.055), index * 125)); }
+  win() {
+    [880, 990, 1180].forEach((freq, index) => {
+      window.setTimeout(() => beep(freq, 0.1, "triangle", 0.05), index * 110);
+    });
+  },
+  lose() {
+    [300, 220, 180].forEach((freq, index) => {
+      window.setTimeout(() => beep(freq, 0.13, "sawtooth", 0.055), index * 125);
+    });
+  }
 };
 
 let voices = [];
 function setupVoices() {
   if (!("speechSynthesis" in window)) return;
-  try { voices = window.speechSynthesis.getVoices(); } catch { voices = []; }
-  if (els.voiceToggle) renderAudioSettings();
+  try {
+    voices = window.speechSynthesis.getVoices();
+  } catch {
+    voices = [];
+  }
 }
+
 if ("speechSynthesis" in window) {
   setupVoices();
   window.speechSynthesis.addEventListener?.("voiceschanged", setupVoices);
@@ -344,35 +440,64 @@ if ("speechSynthesis" in window) {
 function selectLocalizedVoice() {
   const preferred = I18N[state.language].locale.toLowerCase();
   const base = preferred.split("-")[0];
-  const localized = voices.filter((voice) => voice.localService && voice.lang.toLowerCase().startsWith(base));
-  return localized.find((voice) => voice.lang.toLowerCase() === preferred) || localized.find((voice) => voice.default) || localized[0] || null;
+  const localized = voices.filter((voice) => voice.lang.toLowerCase().startsWith(base));
+
+  if (!localized.length) return null;
+
+  return (
+    localized.find((voice) => voice.localService && voice.lang.toLowerCase() === preferred) ||
+    localized.find((voice) => voice.localService) ||
+    localized.find((voice) => voice.lang.toLowerCase() === preferred) ||
+    localized.find((voice) => voice.default) ||
+    localized[0]
+  );
 }
 
 function localizedSpeechText(text) {
   const value = String(text).trim();
   const normalized = normalizeLetter(value);
-  return [...value].length === 1 && normalized ? (SPOKEN_LETTERS[state.language]?.[normalized] || value) : value;
+
+  if ([...value].length === 1 && normalized) {
+    return SPOKEN_LETTERS[state.language]?.[normalized] || value;
+  }
+
+  return value;
 }
 
 function speak(text) {
   if (!state.voiceEnabled || !("speechSynthesis" in window)) return;
+
   try {
     const voice = selectLocalizedVoice();
     if (!voice) return;
+
     const utterance = new SpeechSynthesisUtterance(localizedSpeechText(text));
-    utterance.voice = voice; utterance.lang = voice.lang || I18N[state.language].locale; utterance.rate = 0.96; utterance.pitch = 0.96;
-    window.speechSynthesis.cancel(); window.speechSynthesis.speak(utterance);
-  } catch {}
+    utterance.voice = voice;
+    utterance.lang = voice.lang || I18N[state.language].locale;
+    utterance.rate = 0.96;
+    utterance.pitch = 0.96;
+
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    // Voice feedback is optional.
+  }
 }
 
 function renderAudioSettings() {
   const sfxAvailable = audioSupported();
-  const voiceAvailable = "speechSynthesis" in window && Boolean(selectLocalizedVoice());
+  const voiceAvailable = "speechSynthesis" in window;
+
   if (!sfxAvailable) state.sfxEnabled = false;
   if (!voiceAvailable) state.voiceEnabled = false;
-  els.sfxToggle.disabled = !sfxAvailable; els.voiceToggle.disabled = !voiceAvailable;
-  els.sfxToggle.classList.toggle("active", state.sfxEnabled); els.voiceToggle.classList.toggle("active", state.voiceEnabled);
-  els.sfxToggle.setAttribute("aria-pressed", String(state.sfxEnabled)); els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
+
+  els.sfxToggle.disabled = !sfxAvailable;
+  els.voiceToggle.disabled = !voiceAvailable;
+
+  els.sfxToggle.classList.toggle("active", state.sfxEnabled);
+  els.voiceToggle.classList.toggle("active", state.voiceEnabled);
+  els.sfxToggle.setAttribute("aria-pressed", String(state.sfxEnabled));
+  els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
   els.sfxToggle.title = sfxAvailable ? t("sfx") : t("sfxUnavailable");
   els.voiceToggle.title = voiceAvailable ? t("voice") : t("voiceUnavailable");
 }
@@ -380,251 +505,727 @@ function renderAudioSettings() {
 function throwConfetti() {
   els.confetti.replaceChildren();
   if (reducedMotion?.matches) return;
+
   const colors = ["#45c77a", "#50b8ff", "#f4f8fb", "#d8f56a", "#ffd56a"];
   const fragment = document.createDocumentFragment();
+
   for (let index = 0; index < 48; index += 1) {
-    const piece = document.createElement("i"); piece.className = "confetti"; piece.style.left = `${Math.random() * 96 + 2}%`;
-    piece.style.setProperty("--fall-delay", `${Math.random() * 0.24}s`); piece.style.setProperty("--fall-rotate", `${360 + Math.random() * 420}deg`);
-    piece.style.background = colors[Math.floor(Math.random() * colors.length)]; fragment.appendChild(piece);
+    const piece = document.createElement("i");
+    piece.className = "confetti";
+    piece.style.left = `${Math.random() * 96 + 2}%`;
+    piece.style.setProperty("--fall-delay", `${Math.random() * 0.24}s`);
+    piece.style.setProperty("--fall-rotate", `${360 + Math.random() * 420}deg`);
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    fragment.appendChild(piece);
   }
-  els.confetti.appendChild(fragment); window.setTimeout(() => els.confetti.replaceChildren(), 1900);
+
+  els.confetti.appendChild(fragment);
+  window.setTimeout(() => els.confetti.replaceChildren(), 1900);
 }
 
 let toastTimer = null;
 function say(message) {
-  els.toast.textContent = message; els.toast.classList.remove("muted"); window.clearTimeout(toastTimer);
+  els.toast.textContent = message;
+  els.toast.classList.remove("muted");
+  window.clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => els.toast.classList.add("muted"), 2200);
 }
-function bump(element, value) { element.textContent = value; element.classList.remove("bump"); void element.offsetWidth; element.classList.add("bump"); }
+
+function bump(element, value) {
+  element.textContent = value;
+  element.classList.remove("bump");
+  void element.offsetWidth;
+  element.classList.add("bump");
+}
+
 function renderStats({ animate = true } = {}) {
-  if (animate) { bump(els.score, state.score); bump(els.streak, state.streak); bump(els.bestStreak, state.bestStreak); }
-  else { els.score.textContent = state.score; els.streak.textContent = state.streak; els.bestStreak.textContent = state.bestStreak; }
+  if (animate) {
+    bump(els.score, state.score);
+    bump(els.streak, state.streak);
+    bump(els.bestStreak, state.bestStreak);
+  } else {
+    els.score.textContent = state.score;
+    els.streak.textContent = state.streak;
+    els.bestStreak.textContent = state.bestStreak;
+  }
   renderLives();
 }
+
 function renderLives() {
-  els.livesLabel.textContent = state.lives === 1 ? t("oneLife") : t("manyLives", { count: state.lives });
-  [...els.lifePips.children].forEach((pip, index) => pip.classList.toggle("lost", index >= state.lives));
+  els.livesLabel.textContent = state.lives === 1
+    ? t("oneLife")
+    : t("manyLives", { count: state.lives });
+
+  [...els.lifePips.children].forEach((pip, index) => {
+    pip.classList.toggle("lost", index >= state.lives);
+  });
 }
 
 function buildKeyboard() {
   els.keyboard.replaceChildren();
+
   KB_ROWS.forEach((row, rowIndex) => {
-    const rowElement = document.createElement("div"); rowElement.className = `keyboard-row row-${rowIndex + 1}`;
+    const rowElement = document.createElement("div");
+    rowElement.className = `keyboard-row row-${rowIndex + 1}`;
+
     [...row].forEach((character) => {
-      const button = document.createElement("button"); button.type = "button"; button.className = "key";
-      button.textContent = character; button.dataset.key = character; button.setAttribute("aria-label", character);
-      button.addEventListener("click", () => onGuess(character)); rowElement.appendChild(button);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "key";
+      button.textContent = character;
+      button.dataset.key = character;
+      button.setAttribute("aria-label", character);
+      button.addEventListener("click", () => onGuess(character));
+      rowElement.appendChild(button);
     });
+
     els.keyboard.appendChild(rowElement);
   });
 }
-function resetKeyboard() { els.keyboard.querySelectorAll(".key").forEach((key) => { key.disabled = false; key.classList.remove("used", "good", "bad"); }); }
-function setKeyboardEnabled(enabled) { els.keyboard.querySelectorAll(".key").forEach((key) => { key.disabled = !enabled || key.classList.contains("used"); }); }
-function teamHasLetter(letter) { return state.current?.chars.some((character) => /\p{L}/u.test(character) && normalizeLetter(character) === letter) || false; }
+
+function resetKeyboard() {
+  els.keyboard.querySelectorAll(".key").forEach((key) => {
+    key.disabled = false;
+    key.classList.remove("used", "good", "bad");
+  });
+}
+
+function setKeyboardEnabled(enabled) {
+  els.keyboard.querySelectorAll(".key").forEach((key) => {
+    const alreadyUsed = key.classList.contains("used");
+    key.disabled = !enabled || alreadyUsed;
+  });
+}
+
 function markKey(rawCharacter, good) {
   const normalized = normalizeLetter(rawCharacter);
+
   els.keyboard.querySelectorAll(".key").forEach((key) => {
     if (normalizeLetter(key.dataset.key) !== normalized) return;
-    key.classList.add("used", good ? "good" : "bad"); key.disabled = true;
+    key.classList.add("used", good ? "good" : "bad");
+    key.disabled = true;
   });
+}
+
+function teamHasLetter(letter) {
+  return state.current?.chars.some(
+    (character) => /\p{L}/u.test(character) && normalizeLetter(character) === letter
+  ) ?? false;
+}
+
+function restoreKeyboardState() {
+  resetKeyboard();
+  state.guessed.forEach((letter) => markKey(letter, teamHasLetter(letter)));
 }
 
 function updateGoalGraphics() {
   const misses = MAX_LIVES - state.lives;
-  for (let index = 1; index <= MAX_LIVES; index += 1) els.goal.querySelectorAll(`.hang-part.s${index}`).forEach((node) => node.classList.toggle("show", misses >= index));
-  els.redCard.classList.toggle("show", state.roundStatus === ROUND.LOST || state.roundStatus === ROUND.GIVEN_UP);
+  for (let index = 1; index <= MAX_LIVES; index += 1) {
+    els.goal
+      .querySelectorAll(`.hang-part.s${index}`)
+      .forEach((node) => node.classList.toggle("show", misses >= index));
+  }
+
+  const cardVisible = state.roundStatus === ROUND.LOST || state.roundStatus === ROUND.GIVEN_UP;
+  els.redCard.classList.toggle("show", cardVisible);
 }
-function setBallAnim(name) { if (!els.ball) return; ["idle", "tap", "post", "kick"].forEach((c) => els.ball.classList.remove(c)); void els.ball.offsetWidth; if (name) els.ball.classList.add(name); }
-function goalShake() { els.goal.classList.remove("shake"); void els.goal.offsetWidth; els.goal.classList.add("shake"); window.setTimeout(() => els.goal.classList.remove("shake"), 320); }
-function shuffle(items) { const copy = [...items]; for (let i = copy.length - 1; i > 0; i -= 1) { const j = Math.floor(Math.random() * (i + 1)); [copy[i], copy[j]] = [copy[j], copy[i]]; } return copy; }
+
+function setBallAnim(name) {
+  if (!els.ball) return;
+
+  ["idle", "tap", "post", "kick"].forEach((className) => els.ball.classList.remove(className));
+  void els.ball.offsetWidth;
+  if (name) els.ball.classList.add(name);
+}
+
+function goalShake() {
+  els.goal.classList.remove("shake");
+  void els.goal.offsetWidth;
+  els.goal.classList.add("shake");
+  window.setTimeout(() => els.goal.classList.remove("shake"), 320);
+}
+
+function shuffle(items) {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const other = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[other]] = [copy[other], copy[index]];
+  }
+  return copy;
+}
 
 function rebuildPool() {
-  const selected = state.country; const pool = [];
-  state.data.forEach((group) => { if (selected !== "ALL" && group.pais !== selected) return; group.equipos.forEach((name) => pool.push({ pais: group.pais, nombre: name, chars: [...name] })); });
-  state.pool = pool; state.bag = []; state.bagKey = selected;
+  const selected = state.country;
+  const pool = [];
+
+  state.data.forEach((group) => {
+    if (selected !== "ALL" && group.pais !== selected) return;
+    group.equipos.forEach((name) => {
+      pool.push({ pais: group.pais, nombre: name, chars: [...name] });
+    });
+  });
+
+  state.pool = pool;
+  state.bag = [];
+  state.bagKey = selected;
 }
-function refillBag() { state.bag = shuffle(state.pool); if (state.bag.length > 1 && state.bag[0].nombre === state.previousTeamName) [state.bag[0], state.bag[1]] = [state.bag[1], state.bag[0]]; }
-function pickWord() { if (!state.pool.length) return null; if (!state.bag.length || state.bagKey !== state.country) refillBag(); const picked = state.bag.shift(); state.previousTeamName = picked?.nombre ?? state.previousTeamName; return picked; }
+
+function refillBag() {
+  state.bag = shuffle(state.pool);
+
+  if (state.bag.length > 1 && state.bag[0].nombre === state.previousTeamName) {
+    [state.bag[0], state.bag[1]] = [state.bag[1], state.bag[0]];
+  }
+}
+
+function pickWord() {
+  if (!state.pool.length) return null;
+  if (!state.bag.length || state.bagKey !== state.country) refillBag();
+
+  const picked = state.bag.shift();
+  state.previousTeamName = picked?.nombre ?? state.previousTeamName;
+  return picked;
+}
 
 function setupMasked() {
-  state.masked = state.current.chars.map((character) => ({ character, shown: !/\p{L}/u.test(character) }));
-  state.guessed.forEach((letter) => state.masked.forEach((item) => { if (/\p{L}/u.test(item.character) && normalizeLetter(item.character) === letter) item.shown = true; }));
+  state.masked = state.current.chars.map((character) => ({
+    character,
+    shown: !/\p{L}/u.test(character)
+  }));
+
+  state.guessed.forEach((letter) => {
+    state.masked.forEach((item) => {
+      if (/\p{L}/u.test(item.character) && normalizeLetter(item.character) === letter) {
+        item.shown = true;
+      }
+    });
+  });
+
   renderMasked();
 }
 
 function renderMasked() {
-  els.masked.replaceChildren(); let cluster = null;
-  const ensureCluster = () => { if (cluster) return cluster; cluster = document.createElement("span"); cluster.className = "word-cluster"; els.masked.appendChild(cluster); return cluster; };
+  els.masked.replaceChildren();
+
+  let cluster = null;
+  const ensureCluster = () => {
+    if (cluster) return cluster;
+    cluster = document.createElement("span");
+    cluster.className = "word-cluster";
+    els.masked.appendChild(cluster);
+    return cluster;
+  };
+
   state.masked.forEach((item) => {
-    if (/\s/u.test(item.character)) { const spacer = document.createElement("span"); spacer.className = "word-space"; spacer.setAttribute("aria-hidden", "true"); els.masked.appendChild(spacer); cluster = null; return; }
-    const tile = document.createElement("span"); const isLetter = /\p{L}/u.test(item.character);
-    tile.className = `letter-slot${item.shown ? " revealed" : ""}${isLetter ? "" : " punctuation"}`; tile.textContent = item.shown ? item.character : ""; ensureCluster().appendChild(tile);
+    const isWhitespace = /\s/u.test(item.character);
+
+    if (isWhitespace) {
+      const spacer = document.createElement("span");
+      spacer.className = "word-space";
+      spacer.setAttribute("aria-hidden", "true");
+      els.masked.appendChild(spacer);
+      cluster = null;
+      return;
+    }
+
+    const tile = document.createElement("span");
+    const isLetter = /\p{L}/u.test(item.character);
+    tile.className = `letter-slot${item.shown ? " revealed" : ""}${isLetter ? "" : " punctuation"}`;
+    tile.textContent = item.shown ? item.character : "";
+    ensureCluster().appendChild(tile);
   });
-  els.masked.setAttribute("aria-label", `${t("hiddenTeam")}: ${state.masked.map((item) => item.shown ? item.character : "_").join("")}`);
+
+  const accessibleWord = state.masked
+    .map((item) => (item.shown ? item.character : "_"))
+    .join("");
+  els.masked.setAttribute("aria-label", `${t("hiddenTeam")}: ${accessibleWord}`);
 }
-function reveal(letter) { let hits = 0; state.masked.forEach((item) => { if (!item.shown && /\p{L}/u.test(item.character) && normalizeLetter(item.character) === letter) { item.shown = true; hits += 1; } }); if (hits) renderMasked(); return hits; }
-function revealAll() { state.masked.forEach((item) => { item.shown = true; }); renderMasked(); }
-function isSolved() { return state.masked.every((item) => item.shown); }
+
+function reveal(letter) {
+  let hits = 0;
+
+  state.masked.forEach((item) => {
+    if (
+      !item.shown &&
+      /\p{L}/u.test(item.character) &&
+      normalizeLetter(item.character) === letter
+    ) {
+      item.shown = true;
+      hits += 1;
+    }
+  });
+
+  if (hits) renderMasked();
+  return hits;
+}
+
+function revealAll() {
+  state.masked.forEach((item) => {
+    item.shown = true;
+  });
+  renderMasked();
+}
+
+function isSolved() {
+  return state.masked.every((item) => item.shown);
+}
 
 function renderRoundControls() {
   const playing = state.roundStatus === ROUND.PLAYING;
-  els.playActions.hidden = !playing; els.resultPanel.hidden = ![ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus); els.dataErrorPanel.hidden = state.roundStatus !== ROUND.ERROR;
-  els.hint.disabled = !playing || state.lives <= 1; els.giveUp.disabled = !playing; setKeyboardEnabled(playing);
+
+  els.playActions.hidden = !playing;
+  els.resultPanel.hidden = ![ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus);
+  els.dataErrorPanel.hidden = state.roundStatus !== ROUND.ERROR;
+
+  els.hint.disabled = !playing || state.lives <= 1;
+  els.giveUp.disabled = !playing;
+  setKeyboardEnabled(playing);
 }
+
 function renderResult() {
-  els.roundPoints.textContent = Math.max(0, state.score - state.roundStartScore); els.resultStreak.textContent = state.streak;
-  if (state.roundStatus === ROUND.WON) { els.resultEyebrow.textContent = t("wonEyebrow"); els.resultTitle.textContent = t("wonTitle"); els.resultSummary.textContent = t("wonSummary", { team: state.current.nombre }); }
-  else if (state.roundStatus === ROUND.LOST) { els.resultEyebrow.textContent = t("lostEyebrow"); els.resultTitle.textContent = t("lostTitle"); els.resultSummary.textContent = t("lostSummary", { team: state.current.nombre }); }
-  else { els.resultEyebrow.textContent = t("gaveUpEyebrow"); els.resultTitle.textContent = t("gaveUpTitle"); els.resultSummary.textContent = t("gaveUpSummary", { team: state.current.nombre }); }
+  const gained = Math.max(0, state.score - state.roundStartScore);
+  els.roundPoints.textContent = gained;
+  els.resultStreak.textContent = state.streak;
+
+  if (state.roundStatus === ROUND.WON) {
+    els.resultEyebrow.textContent = t("wonEyebrow");
+    els.resultTitle.textContent = t("wonTitle");
+    els.resultSummary.textContent = t("wonSummary", { team: state.current.nombre });
+  } else if (state.roundStatus === ROUND.LOST) {
+    els.resultEyebrow.textContent = t("lostEyebrow");
+    els.resultTitle.textContent = t("lostTitle");
+    els.resultSummary.textContent = t("lostSummary", { team: state.current.nombre });
+  } else {
+    els.resultEyebrow.textContent = t("gaveUpEyebrow");
+    els.resultTitle.textContent = t("gaveUpTitle");
+    els.resultSummary.textContent = t("gaveUpSummary", { team: state.current.nombre });
+  }
 }
-function finishRound(status) { state.roundStatus = status; renderStats(); updateGoalGraphics(); renderRoundControls(); renderResult(); savePersist(); }
+
+function finishRound(status) {
+  state.roundStatus = status;
+  renderStats();
+  updateGoalGraphics();
+  renderRoundControls();
+  renderResult();
+  savePersist();
+}
 
 function useHint() {
   if (state.roundStatus !== ROUND.PLAYING) return;
-  if (state.lives <= 1) { say(t("noMoreHints")); return; }
+  if (state.lives <= 1) {
+    say(t("noMoreHints"));
+    return;
+  }
+
   const hidden = state.masked.filter((item) => !item.shown && /\p{L}/u.test(item.character));
-  if (!hidden.length) { say(t("alreadyRevealed")); return; }
-  const item = hidden[Math.floor(Math.random() * hidden.length)]; const normalized = normalizeLetter(item.character);
-  state.lives -= 1; state.guessed.add(normalized); markKey(item.character, true); reveal(normalized);
-  renderStats(); updateGoalGraphics(); renderRoundControls(); say(t("hintMessage")); sfx.good(); setBallAnim("tap");
-  if (isSolved()) handleWin(); else savePersist();
+  if (!hidden.length) {
+    say(t("alreadyRevealed"));
+    return;
+  }
+
+  const item = hidden[Math.floor(Math.random() * hidden.length)];
+  const normalized = normalizeLetter(item.character);
+
+  state.lives -= 1;
+  state.guessed.add(normalized);
+  markKey(item.character, true);
+  reveal(normalized);
+
+  renderStats();
+  updateGoalGraphics();
+  renderRoundControls();
+  say(t("hintMessage"));
+  sfx.good();
+  setBallAnim("tap");
+
+  if (isSolved()) handleWin();
+  else savePersist();
 }
-function giveUp() { if (state.roundStatus !== ROUND.PLAYING || !state.current) return; state.lives = 0; state.streak = 0; revealAll(); say(t("was", { team: state.current.nombre })); sfx.lose(); finishRound(ROUND.GIVEN_UP); }
+
+function giveUp() {
+  if (state.roundStatus !== ROUND.PLAYING || !state.current) return;
+
+  state.lives = 0;
+  state.streak = 0;
+  revealAll();
+  say(t("was", { team: state.current.nombre }));
+  sfx.lose();
+  finishRound(ROUND.GIVEN_UP);
+}
 
 function onGuess(rawCharacter) {
   if (state.roundStatus !== ROUND.PLAYING || !state.current) return;
-  const character = normalizeLetter(rawCharacter); if (!character || state.guessed.has(character)) return;
-  state.guessed.add(character); const hits = reveal(character);
+
+  const character = normalizeLetter(rawCharacter);
+  if (!character || state.guessed.has(character)) return;
+
+  state.guessed.add(character);
+  const hits = reveal(character);
+
   if (hits > 0) {
-    markKey(rawCharacter, true); state.score += 100 * hits; renderStats(); say(t("goal")); speak(t("speechGoal")); sfx.good(); setBallAnim("tap");
-    if (isSolved()) handleWin(); else savePersist();
+    markKey(rawCharacter, true);
+    state.score += 100 * hits;
+    renderStats();
+    say(t("goal"));
+    speak(t("speechGoal"));
+    sfx.good();
+    setBallAnim("tap");
+
+    if (isSolved()) handleWin();
+    else savePersist();
     return;
   }
-  markKey(rawCharacter, false); state.lives -= 1; renderStats(); updateGoalGraphics(); renderRoundControls(); say(t("out")); speak(t("speechOut")); sfx.bad(); goalShake(); setBallAnim("post");
-  if (state.lives <= 0) { state.streak = 0; revealAll(); say(t("gameOver", { team: state.current.nombre })); sfx.lose(); finishRound(ROUND.LOST); }
-  else savePersist();
+
+  markKey(rawCharacter, false);
+  state.lives -= 1;
+  renderStats();
+  updateGoalGraphics();
+  renderRoundControls();
+  say(t("out"));
+  speak(t("speechOut"));
+  sfx.bad();
+  goalShake();
+  setBallAnim("post");
+
+  if (state.lives <= 0) {
+    state.streak = 0;
+    revealAll();
+    say(t("gameOver", { team: state.current.nombre }));
+    sfx.lose();
+    finishRound(ROUND.LOST);
+  } else {
+    savePersist();
+  }
 }
 
 function handleWin() {
   if (state.roundStatus !== ROUND.PLAYING) return;
-  state.score += 500 + state.lives * 50; state.streak += 1; state.bestStreak = Math.max(state.bestStreak, state.streak);
-  say(t("greatGoal")); speak(t("speechWin")); sfx.win(); throwConfetti(); setBallAnim("kick");
-  if (els.netRect) { els.netRect.classList.remove("ripple"); void els.netRect.offsetWidth; els.netRect.classList.add("ripple"); }
+
+  state.score += 500 + state.lives * 50;
+  state.streak += 1;
+  state.bestStreak = Math.max(state.bestStreak, state.streak);
+
+  say(t("greatGoal"));
+  speak(t("speechWin"));
+  sfx.win();
+  throwConfetti();
+  setBallAnim("kick");
+
+  if (els.netRect) {
+    els.netRect.classList.remove("ripple");
+    void els.netRect.offsetWidth;
+    els.netRect.classList.add("ripple");
+  }
+
   finishRound(ROUND.WON);
 }
 
-function renderCurrentRound({ restored = false } = {}) {
-  setupMasked(); resetKeyboard();
-  state.guessed.forEach((letter) => markKey(letter, teamHasLetter(letter)));
-  if (state.roundStatus !== ROUND.PLAYING) revealAll();
-  renderStats({ animate: !restored }); updateGoalGraphics(); setBallAnim("idle"); renderRoundControls();
-  if (state.roundStatus !== ROUND.PLAYING) renderResult();
-  els.countryBadge.textContent = countryLabel(state.current.pais);
-  if (state.roundStatus === ROUND.PLAYING) say(t("rival", { country: countryLabel(state.current.pais) }));
-}
-
 function restoreSavedRound() {
-  const saved = state.savedRound; state.savedRound = null;
-  if (!saved || !RESTORABLE_ROUNDS.has(saved.status) || !Number.isInteger(saved.lives) || saved.lives < 0 || saved.lives > MAX_LIVES || !Array.isArray(saved.guessed)) return false;
-  const group = state.data.find((item) => item.pais === saved.teamCountry);
-  if (!group || !group.equipos.includes(saved.team)) return false;
-  if (state.country !== "ALL" && state.country !== saved.teamCountry) return false;
-  const current = state.pool.find((item) => item.pais === saved.teamCountry && item.nombre === saved.team);
+  const saved = state.savedRound;
+  state.savedRound = null;
+
+  if (
+    !saved ||
+    ![ROUND.PLAYING, ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(saved.status) ||
+    !Number.isInteger(saved.lives) ||
+    saved.lives < 0 ||
+    saved.lives > MAX_LIVES ||
+    !Array.isArray(saved.guessed)
+  ) {
+    return false;
+  }
+
+  const current = state.pool.find(
+    (item) => item.pais === saved.teamCountry && item.nombre === saved.team
+  );
   if (!current) return false;
-  state.current = current; state.previousTeamName = current.nombre; state.lives = saved.lives;
+
+  state.current = current;
+  state.previousTeamName = current.nombre;
+  state.lives = saved.lives;
   state.guessed = new Set(saved.guessed.map(normalizeLetter).filter(Boolean));
-  state.roundStartScore = validNonNegative(saved.roundStartScore) ? saved.roundStartScore : state.score;
+  state.roundStartScore = Number.isFinite(saved.roundStartScore) && saved.roundStartScore >= 0
+    ? saved.roundStartScore
+    : state.score;
   state.roundStatus = saved.status;
-  renderCurrentRound({ restored: true });
+
+  setupMasked();
+  restoreKeyboardState();
+  if (state.roundStatus !== ROUND.PLAYING) revealAll();
+  renderStats({ animate: false });
+  updateGoalGraphics();
+  setBallAnim("idle");
+  renderRoundControls();
+  if (state.roundStatus !== ROUND.PLAYING) renderResult();
+
+  els.countryBadge.textContent = countryLabel(state.current.pais);
+  if (state.roundStatus === ROUND.PLAYING) {
+    say(t("rival", { country: countryLabel(state.current.pais) }));
+  }
+
   return true;
 }
 
 function startRound() {
-  if (!state.pool.length) { state.roundStatus = ROUND.ERROR; renderRoundControls(); say(t("noTeams")); return; }
-  state.roundStatus = ROUND.PLAYING; state.lives = MAX_LIVES; state.guessed.clear(); state.roundStartScore = state.score;
-  els.confetti.replaceChildren(); els.redCard.classList.remove("show"); resetKeyboard(); state.current = pickWord();
-  if (!state.current) { state.roundStatus = ROUND.ERROR; renderRoundControls(); say(t("noTeams")); return; }
-  renderCurrentRound(); savePersist();
+  if (!state.pool.length) {
+    state.roundStatus = ROUND.ERROR;
+    renderRoundControls();
+    say(t("noTeams"));
+    return;
+  }
+
+  state.roundStatus = ROUND.PLAYING;
+  state.lives = MAX_LIVES;
+  state.guessed.clear();
+  state.roundStartScore = state.score;
+  els.confetti.replaceChildren();
+  els.redCard.classList.remove("show");
+
+  resetKeyboard();
+  state.current = pickWord();
+
+  if (!state.current) {
+    state.roundStatus = ROUND.ERROR;
+    renderRoundControls();
+    say(t("noTeams"));
+    return;
+  }
+
+  setupMasked();
+  renderStats();
+  updateGoalGraphics();
+  setBallAnim("idle");
+  renderRoundControls();
+
+  els.countryBadge.textContent = countryLabel(state.current.pais);
+  say(t("rival", { country: countryLabel(state.current.pais) }));
+  savePersist();
 }
 
 function abandonRoundForFilterChange() {
-  if (state.roundStatus === ROUND.PLAYING) { state.streak = 0; state.current = null; state.guessed.clear(); renderStats(); savePersist(); }
+  if (state.roundStatus === ROUND.PLAYING) {
+    state.streak = 0;
+    state.current = null;
+    state.guessed.clear();
+    renderStats();
+    savePersist();
+  }
 }
 
 function onKeydown(event) {
-  if (event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || event.target?.closest?.("button, select, input, textarea, [contenteditable='true']")) return;
-  if (state.roundStatus === ROUND.PLAYING && /^\p{L}$/u.test(event.key)) { event.preventDefault(); onGuess(event.key); return; }
-  if (event.key === "Enter" && [ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) { event.preventDefault(); startRound(); }
+  if (
+    event.defaultPrevented ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey ||
+    event.target?.closest?.("button, select, input, textarea, [contenteditable='true']")
+  ) {
+    return;
+  }
+
+  if (state.roundStatus === ROUND.PLAYING && /^\p{L}$/u.test(event.key)) {
+    event.preventDefault();
+    onGuess(event.key);
+    return;
+  }
+
+  if (
+    event.key === "Enter" &&
+    [ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)
+  ) {
+    event.preventDefault();
+    startRound();
+  }
 }
 
 function validateTeamData(data) {
-  if (!Array.isArray(data) || data.length === 0) throw new TypeError("Team data must be a non-empty array.");
+  if (!Array.isArray(data) || data.length === 0) {
+    throw new TypeError("Team data must be a non-empty array.");
+  }
+
   const seenCountries = new Set();
+
   return data.map((group, groupIndex) => {
-    if (!group || typeof group !== "object") throw new TypeError(`Invalid group at index ${groupIndex}.`);
+    if (!group || typeof group !== "object") {
+      throw new TypeError(`Invalid group at index ${groupIndex}.`);
+    }
+
     const country = typeof group.pais === "string" ? group.pais.trim() : "";
-    if (!country || seenCountries.has(country)) throw new TypeError(`Invalid or duplicated country at index ${groupIndex}.`);
+    if (!country || seenCountries.has(country)) {
+      throw new TypeError(`Invalid or duplicated country at index ${groupIndex}.`);
+    }
     seenCountries.add(country);
-    if (!Array.isArray(group.equipos) || group.equipos.length === 0) throw new TypeError(`Country ${country} has no valid team list.`);
+
+    if (!Array.isArray(group.equipos) || group.equipos.length === 0) {
+      throw new TypeError(`Country ${country} has no valid team list.`);
+    }
+
     const seenTeams = new Set();
     const teams = group.equipos.map((team, teamIndex) => {
       const name = typeof team === "string" ? team.trim() : "";
-      if (!name || name.length < 2 || seenTeams.has(name)) throw new TypeError(`Invalid or duplicated team at ${country}:${teamIndex}.`);
-      seenTeams.add(name); return name;
+      if (!name || name.length < 2 || seenTeams.has(name)) {
+        throw new TypeError(`Invalid or duplicated team at ${country}:${teamIndex}.`);
+      }
+      seenTeams.add(name);
+      return name;
     });
+
     return { pais: country, equipos: teams };
   });
 }
 
 function loadData() {
-  state.roundStatus = ROUND.LOADING; renderRoundControls(); els.country.disabled = true; els.countryBadge.textContent = "—"; say(t("loading"));
+  state.roundStatus = ROUND.LOADING;
+  renderRoundControls();
+  els.country.disabled = true;
+  els.countryBadge.textContent = "—";
+  say(t("loading"));
+
   try {
-    state.data = validateTeamData(window.AHORCABOL_TEAM_DATA); fillCountrySelect(); rebuildPool();
+    state.data = validateTeamData(window.AHORCABOL_TEAM_DATA);
+    fillCountrySelect();
+    rebuildPool();
     if (!restoreSavedRound()) startRound();
   } catch (error) {
-    console.warn(t("dataWarning"), error); state.data = []; state.pool = []; state.current = null; state.roundStatus = ROUND.ERROR;
-    els.country.disabled = true; els.countryBadge.textContent = "—"; renderRoundControls(); say(t("dataWarning"));
+    console.warn(t("dataWarning"), error);
+    state.data = [];
+    state.pool = [];
+    state.current = null;
+    state.roundStatus = ROUND.ERROR;
+    els.country.disabled = true;
+    els.countryBadge.textContent = "—";
+    renderRoundControls();
+    say(t("dataWarning"));
   }
 }
 
 function fillCountrySelect() {
-  const countries = Array.from(new Set(state.data.map((group) => group.pais))).sort((a, b) => countryLabel(a).localeCompare(countryLabel(b), I18N[state.language].locale));
-  els.country.replaceChildren(); const allOption = document.createElement("option"); allOption.value = "ALL"; allOption.textContent = t("all"); els.country.appendChild(allOption);
-  countries.forEach((country) => { const option = document.createElement("option"); option.value = country; option.textContent = countryLabel(country); els.country.appendChild(option); });
-  if (state.country !== "ALL" && !countries.includes(state.country)) state.country = "ALL";
-  els.country.value = state.country; els.country.disabled = false;
+  const countries = Array.from(new Set(state.data.map((group) => group.pais)))
+    .sort((a, b) => countryLabel(a).localeCompare(countryLabel(b), I18N[state.language].locale));
+
+  els.country.replaceChildren();
+
+  const allOption = document.createElement("option");
+  allOption.value = "ALL";
+  allOption.textContent = t("all");
+  els.country.appendChild(allOption);
+
+  countries.forEach((country) => {
+    const option = document.createElement("option");
+    option.value = country;
+    option.textContent = countryLabel(country);
+    els.country.appendChild(option);
+  });
+
+  if (state.country !== "ALL" && !countries.includes(state.country)) {
+    state.country = "ALL";
+  }
+
+  els.country.value = state.country;
+  els.country.disabled = false;
 }
 
 function applyLanguage(language, { persist = true } = {}) {
   if (!LANGUAGES.includes(language)) return;
-  state.language = language; document.documentElement.lang = I18N[language].htmlLang; document.title = t("title"); els.metaDescription?.setAttribute("content", t("description"));
-  document.querySelectorAll("[data-i18n]").forEach((node) => { node.textContent = t(node.dataset.i18n); });
-  els.languageSwitcher.setAttribute("aria-label", t("languageSwitcher")); els.audioControls.setAttribute("aria-label", t("audioControls")); els.scoreboard.setAttribute("aria-label", t("scoreboard"));
-  els.matchPanel.setAttribute("aria-label", t("gameControls")); els.arena.setAttribute("aria-label", t("arenaLabel")); els.word.setAttribute("aria-label", t("hiddenTeam")); els.keyboard.setAttribute("aria-label", t("keyboard"));
-  els.languageSwitcher.querySelectorAll(".segment").forEach((button) => { const active = button.dataset.lang === language; button.classList.toggle("active", active); button.setAttribute("aria-pressed", String(active)); });
-  if (state.data.length) fillCountrySelect();
+
+  state.language = language;
+  document.documentElement.lang = I18N[language].htmlLang;
+  document.title = t("title");
+  els.metaDescription?.setAttribute("content", t("description"));
+
+  document.querySelectorAll("[data-i18n]").forEach((node) => {
+    node.textContent = t(node.dataset.i18n);
+  });
+
+  els.languageSwitcher.setAttribute("aria-label", t("languageSwitcher"));
+  els.audioControls.setAttribute("aria-label", t("audioControls"));
+  els.scoreboard.setAttribute("aria-label", t("scoreboard"));
+  els.matchPanel.setAttribute("aria-label", t("gameControls"));
+  els.arena.setAttribute("aria-label", t("arenaLabel"));
+  els.word.setAttribute("aria-label", t("hiddenTeam"));
+  els.keyboard.setAttribute("aria-label", t("keyboard"));
+
+  els.languageSwitcher.querySelectorAll(".segment").forEach((button) => {
+    const active = button.dataset.lang === language;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+
+  if (state.data.length) {
+    fillCountrySelect();
+  }
+
   if (state.current) {
     els.countryBadge.textContent = countryLabel(state.current.pais);
-    if (state.roundStatus === ROUND.PLAYING) say(t("rival", { country: countryLabel(state.current.pais) }));
-    if ([ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) renderResult();
+    if (state.roundStatus === ROUND.PLAYING) {
+      say(t("rival", { country: countryLabel(state.current.pais) }));
+    }
+    if ([ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) {
+      renderResult();
+    }
     renderMasked();
   }
-  renderLives(); renderAudioSettings(); if (persist) savePersist();
+
+  renderLives();
+  renderAudioSettings();
+
+  if (persist) savePersist();
 }
 
-function toggleSfx() { if (!audioSupported()) { say(t("sfxUnavailable")); return; } state.sfxEnabled = !state.sfxEnabled; renderAudioSettings(); savePersist(); if (state.sfxEnabled) sfx.good(); }
+function toggleSfx() {
+  if (!audioSupported()) {
+    say(t("sfxUnavailable"));
+    return;
+  }
+
+  state.sfxEnabled = !state.sfxEnabled;
+  renderAudioSettings();
+  savePersist();
+  if (state.sfxEnabled) sfx.good();
+}
+
 function toggleVoice() {
-  if (!("speechSynthesis" in window) || !selectLocalizedVoice()) { say(t("voiceUnavailable")); return; }
-  state.voiceEnabled = !state.voiceEnabled; if (!state.voiceEnabled) window.speechSynthesis.cancel(); renderAudioSettings(); savePersist();
+  if (!("speechSynthesis" in window)) {
+    say(t("voiceUnavailable"));
+    return;
+  }
+
+  state.voiceEnabled = !state.voiceEnabled;
+  if (!state.voiceEnabled) window.speechSynthesis.cancel();
+  renderAudioSettings();
+  savePersist();
 }
 
 function bindEvents() {
-  els.languageSwitcher.addEventListener("click", (event) => { const button = event.target.closest(".segment"); if (button) applyLanguage(button.dataset.lang); });
-  els.country.addEventListener("change", () => { abandonRoundForFilterChange(); state.country = els.country.value; rebuildPool(); startRound(); });
-  els.sfxToggle.addEventListener("click", toggleSfx); els.voiceToggle.addEventListener("click", toggleVoice); els.hint.addEventListener("click", useHint);
-  els.giveUp.addEventListener("click", giveUp); els.nextGame.addEventListener("click", startRound); els.retryData.addEventListener("click", loadData); window.addEventListener("keydown", onKeydown);
+  els.languageSwitcher.addEventListener("click", (event) => {
+    const button = event.target.closest(".segment");
+    if (button) applyLanguage(button.dataset.lang);
+  });
+
+  els.country.addEventListener("change", () => {
+    abandonRoundForFilterChange();
+    state.country = els.country.value;
+    rebuildPool();
+    startRound();
+  });
+
+  els.sfxToggle.addEventListener("click", toggleSfx);
+  els.voiceToggle.addEventListener("click", toggleVoice);
+  els.hint.addEventListener("click", useHint);
+  els.giveUp.addEventListener("click", giveUp);
+  els.nextGame.addEventListener("click", startRound);
+  els.retryData.addEventListener("click", loadData);
+  window.addEventListener("keydown", onKeydown);
 }
 
 (function init() {
-  loadPersist(); buildKeyboard(); bindEvents(); applyLanguage(state.language, { persist: false }); renderStats({ animate: false }); renderRoundControls(); renderAudioSettings(); loadData();
+  loadPersist();
+  buildKeyboard();
+  bindEvents();
+  applyLanguage(state.language, { persist: false });
+  renderStats({ animate: false });
+  renderRoundControls();
+  renderAudioSettings();
+  loadData();
 })();
