@@ -44,7 +44,7 @@ Everything needed to play is local. A static web server still works too, if you 
 ## Screenshot
 
 <p align="center">
-  <img src="assets/branding/screenshot-v1.6.png" alt="Ahorcabol 1.6" width="90%" />
+  <img src="assets/screenshots/screenshot-v1.6.png" alt="Ahorcabol 1.6" width="90%" />
 </p>
 
 ## Author
