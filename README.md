@@ -18,14 +18,12 @@ No accounts. No ads. No framework. No build step. Just football, letters, and on
 
 ## What it does
 
-- Guess current top-flight club names from Argentina, Brazil, England, France, Germany, Portugal and Spain
+- Guess current top-flight club names from Argentina, Brazil, England, France, Germany, Portugal and Spain, plus MLS clubs
 - Six lives with score, current streak and best streak
 - Hint and give-up controls with explicit round-end states
 - Shuffle-bag selection to avoid immediate team repeats
 - Country / league filtering
-- 🇦🇷 **Español** by default
-- 🇺🇸 **English**
-- <img src="assets/branding/senyera.svg" alt="Senyera" width="22"> **Català**
+- Spanish by default, plus English and Catalan
 - Physical and on-screen keyboard support, including a distinct `Ñ`
 - Responsive three-row keyboard on desktop and mobile
 - Lightweight goal, post, net and celebration animations
@@ -37,7 +35,7 @@ No accounts. No ads. No framework. No build step. Just football, letters, and on
 
 `teamlist.json` is the single source of truth for club names.
 
-The pool is aligned to the 2026 Argentine and Brazilian top-flight seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
+The pool is aligned to the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
 
 If the JSON cannot be loaded or its shape is invalid, the game fails closed with a retry control instead of silently using a stale embedded copy.
 
