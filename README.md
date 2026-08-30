@@ -1,45 +1,50 @@
 # Ahorcabol
 
 <p align="center">
-  <img src="assets/branding/ahorcabol-logo-1.svg" alt="Ahorcabol" width="560" />
+  <img src="assets/branding/ahorcabol-head-medium.png" alt="Ahorcabol" width="560" />
 </p>
 
 <p align="center">
-  <strong>Football hangman for people whose team did not ruin their day thoroughly enough.</strong>
+  <strong>Football hangman. Fewer tactics, more spelling.</strong>
 </p>
 
-Ahorcabol is a lightweight browser game about guessing football club names before the hangman catches up with you.
-
-No accounts. No ads. No framework. No build step. Just football, letters, and one more completely unnecessary reason to suffer.
-
-## Why
-
-Football already has VAR, missed penalties, inexplicable substitutions and entire weekends ruined by eleven strangers.
-
-Ahorcabol contributes spelling. Nobody asked, but here we are.
+Ahorcabol is a football version of hangman: pick a league, guess the club, and try not to run out of lives before the name gives up first.
 
 ## Play
 
 **Play online:** https://santiagorodriguez.com/Ahorcabol/
 
-## What it does
+## The game
 
-- Guess club names from seven football countries/leagues
-- Six lives, score, streaks, hints and surrender for when optimism finally expires
-- 🇦🇷 **Español** by default
+- Pick one league or mix every club into the same bag.
+- You get six lives. Wrong letters spend them; hints are not exactly charity either.
+- Wins add points and keep your streak alive. Losing, giving up, or changing leagues mid-round does not.
+- Play with the on-screen keyboard or a physical one. `Ñ` gets its own key, as it should.
+- Sound effects and voice are optional.
+- The club pool is shuffled, so the same team should not immediately come back to haunt you.
+
+### Languages
+
+- 🇦🇷 **Español**
 - 🇺🇸 **English**
 - <img src="assets/branding/senyera.svg" alt="Senyera" width="22"> **Català**
-- Physical and on-screen keyboard support
-- Country filtering
-- Goal, post, net, confetti, sound and optional voice feedback
-- Responsive layout for desktop and mobile
-- `localStorage` persistence for score, streak and language
-- Plain HTML, CSS and JavaScript with no dependencies
+
+## Clubs
+
+The game includes clubs from Argentina, Brazil, England, France, Germany, Portugal, Spain and MLS.
+
+`teamlist.js` is the club list used by the game. It currently follows the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
+
+## Offline
+
+Download the repository ZIP, extract it, and open `index.html` directly. That's it.
+
+Everything needed to play is local. A static web server still works too, if you feel like making hangman slightly more official.
 
 ## Screenshot
 
 <p align="center">
-  <img src="assets/branding/screenshot-v.1.5.png" alt="Ahorcabol 1.5" width="90%" />
+  <img src="assets/branding/screenshot-v1.6.png" alt="Ahorcabol 1.6" width="90%" />
 </p>
 
 ## Author
@@ -47,14 +52,6 @@ Ahorcabol contributes spelling. Nobody asked, but here we are.
 [Santiago Rodriguez](https://santiagorodriguez.com)
 
 <a href="https://santiagorodriguez.com/donate"><img src="assets/branding/donate.svg" alt="Donate" height="52" /></a>
-
-## Run locally
-
-Serve the repository directory with any static web server and open `index.html`.
-
-There is no build command. Society remains functional.
-
-If `teamlist.json` cannot be loaded, the game uses its built-in fallback list.
 
 ## License
 
