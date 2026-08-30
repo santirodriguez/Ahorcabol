@@ -54,10 +54,10 @@ const I18N = {
     was: "Era {team}.",
     greatGoal: "¡Golazo! Equipo resuelto.",
     rival: "Te tocó {country}.",
-    dataWarning: "No se pudo cargar teamlist.json.",
+    dataWarning: "No se pudo cargar la lista de equipos.",
     dataErrorEyebrow: "Datos",
     dataErrorTitle: "No pudimos cargar los equipos.",
-    dataErrorBody: "Revisá la conexión y volvé a intentarlo.",
+    dataErrorBody: "Revisá que los archivos del juego estén completos y volvé a intentarlo.",
     roundPoints: "Puntos de la ronda",
     currentStreak: "Racha actual",
     wonEyebrow: "Victoria",
@@ -115,10 +115,10 @@ const I18N = {
     was: "It was {team}.",
     greatGoal: "What a goal. Team solved.",
     rival: "You got {country}.",
-    dataWarning: "Could not load teamlist.json.",
+    dataWarning: "Could not load the team list.",
     dataErrorEyebrow: "Data",
     dataErrorTitle: "We could not load the teams.",
-    dataErrorBody: "Check the connection and try again.",
+    dataErrorBody: "Check that the game files are complete and try again.",
     roundPoints: "Round points",
     currentStreak: "Current streak",
     wonEyebrow: "Victory",
@@ -176,10 +176,10 @@ const I18N = {
     was: "Era {team}.",
     greatGoal: "Golàs. Equip resolt.",
     rival: "T'ha tocat {country}.",
-    dataWarning: "No s'ha pogut carregar teamlist.json.",
+    dataWarning: "No s'ha pogut carregar la llista d'equips.",
     dataErrorEyebrow: "Dades",
     dataErrorTitle: "No hem pogut carregar els equips.",
-    dataErrorBody: "Comprova la connexió i torna-ho a provar.",
+    dataErrorBody: "Comprova que els fitxers del joc estiguin complets i torna-ho a provar.",
     roundPoints: "Punts de la ronda",
     currentStreak: "Ratxa actual",
     wonEyebrow: "Victòria",
@@ -205,10 +205,31 @@ const COUNTRY_LABELS = {
   Argentina: { "es-AR": "Argentina", "en-US": "Argentina", ca: "Argentina" },
   España: { "es-AR": "España", "en-US": "Spain", ca: "Espanya" },
   Inglaterra: { "es-AR": "Inglaterra", "en-US": "England", ca: "Anglaterra" },
+  MLS: { "es-AR": "MLS", "en-US": "MLS", ca: "MLS" },
   Alemania: { "es-AR": "Alemania", "en-US": "Germany", ca: "Alemanya" },
   Francia: { "es-AR": "Francia", "en-US": "France", ca: "França" },
   Portugal: { "es-AR": "Portugal", "en-US": "Portugal", ca: "Portugal" },
   Brasil: { "es-AR": "Brasil", "en-US": "Brazil", ca: "Brasil" }
+};
+
+const SPOKEN_LETTERS = {
+  "es-AR": {
+    A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge", H: "hache",
+    I: "i", J: "jota", K: "ka", L: "ele", M: "eme", N: "ene", "Ñ": "eñe", O: "o",
+    P: "pe", Q: "cu", R: "erre", S: "ese", T: "te", U: "u", V: "uve",
+    W: "doble uve", X: "equis", Y: "ye", Z: "zeta"
+  },
+  "en-US": {
+    A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I",
+    J: "J", K: "K", L: "L", M: "M", N: "N", "Ñ": "enye", O: "O", P: "P", Q: "Q",
+    R: "R", S: "S", T: "T", U: "U", V: "V", W: "W", X: "X", Y: "Y", Z: "Z"
+  },
+  ca: {
+    A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efa", G: "ge", H: "hac",
+    I: "i", J: "jota", K: "ca", L: "ela", M: "ema", N: "ena", "Ñ": "enye", O: "o",
+    P: "pe", Q: "cu", R: "erra", S: "essa", T: "te", U: "u", V: "ve baixa",
+    W: "ve doble", X: "ics", Y: "i grega", Z: "zeta"
+  }
 };
 
 const state = {
@@ -393,20 +414,43 @@ if ("speechSynthesis" in window) {
   window.speechSynthesis.addEventListener?.("voiceschanged", setupVoices);
 }
 
+function selectLocalizedVoice() {
+  const preferred = I18N[state.language].locale.toLowerCase();
+  const base = preferred.split("-")[0];
+  const localized = voices.filter((voice) => voice.lang.toLowerCase().startsWith(base));
+
+  if (!localized.length) return null;
+
+  return (
+    localized.find((voice) => voice.localService && voice.lang.toLowerCase() === preferred) ||
+    localized.find((voice) => voice.localService) ||
+    localized.find((voice) => voice.lang.toLowerCase() === preferred) ||
+    localized.find((voice) => voice.default) ||
+    localized[0]
+  );
+}
+
+function localizedSpeechText(text) {
+  const value = String(text).trim();
+  const normalized = normalizeLetter(value);
+
+  if ([...value].length === 1 && normalized) {
+    return SPOKEN_LETTERS[state.language]?.[normalized] || value;
+  }
+
+  return value;
+}
+
 function speak(text) {
   if (!state.voiceEnabled || !("speechSynthesis" in window)) return;
 
   try {
-    const utterance = new SpeechSynthesisUtterance(text);
-    const preferred = I18N[state.language].locale;
-    const base = preferred.split("-")[0].toLowerCase();
-    const voice =
-      voices.find((item) => item.lang.toLowerCase() === preferred.toLowerCase()) ||
-      voices.find((item) => item.lang.toLowerCase().startsWith(base)) ||
-      voices[0];
+    const voice = selectLocalizedVoice();
+    if (!voice) return;
 
-    if (voice) utterance.voice = voice;
-    utterance.lang = preferred;
+    const utterance = new SpeechSynthesisUtterance(localizedSpeechText(text));
+    utterance.voice = voice;
+    utterance.lang = voice.lang || I18N[state.language].locale;
     utterance.rate = 0.96;
     utterance.pitch = 0.96;
 
@@ -935,7 +979,7 @@ function validateTeamData(data) {
   });
 }
 
-async function loadData() {
+function loadData() {
   state.roundStatus = ROUND.LOADING;
   renderRoundControls();
   els.country.disabled = true;
@@ -943,10 +987,7 @@ async function loadData() {
   say(t("loading"));
 
   try {
-    const response = await fetch("teamlist.json", { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    state.data = validateTeamData(await response.json());
+    state.data = validateTeamData(window.AHORCABOL_TEAM_DATA);
     fillCountrySelect();
     rebuildPool();
     startRound();
@@ -1084,7 +1125,7 @@ function bindEvents() {
   window.addEventListener("keydown", onKeydown);
 }
 
-(async function init() {
+(function init() {
   loadPersist();
   buildKeyboard();
   bindEvents();
@@ -1092,5 +1133,5 @@ function bindEvents() {
   renderStats({ animate: false });
   renderRoundControls();
   renderAudioSettings();
-  await loadData();
+  loadData();
 })();
