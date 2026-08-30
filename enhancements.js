@@ -6,6 +6,19 @@ COUNTRY_LABELS.MLS = {
   ca: "MLS"
 };
 
+Object.assign(I18N["es-AR"], {
+  dataWarning: "No se pudo cargar la lista de equipos.",
+  dataErrorBody: "Revisá que los archivos del juego estén completos y volvé a intentarlo."
+});
+Object.assign(I18N["en-US"], {
+  dataWarning: "Could not load the team list.",
+  dataErrorBody: "Check that the game files are complete and try again."
+});
+Object.assign(I18N.ca, {
+  dataWarning: "No s'ha pogut carregar la llista d'equips.",
+  dataErrorBody: "Comprova que els fitxers del joc estiguin complets i torna-ho a provar."
+});
+
 const SPOKEN_LETTERS = {
   "es-AR": {
     A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge", H: "hache",
@@ -34,6 +47,8 @@ function selectLocalizedVoice() {
   if (!localized.length) return null;
 
   return (
+    localized.find((voice) => voice.localService && voice.lang.toLowerCase() === preferred) ||
+    localized.find((voice) => voice.localService) ||
     localized.find((voice) => voice.lang.toLowerCase() === preferred) ||
     localized.find((voice) => voice.default) ||
     localized[0]
@@ -70,3 +85,6 @@ speak = function speakLocalized(text) {
     // Voice feedback is optional.
   }
 };
+
+const dataErrorBody = document.querySelector('[data-i18n="dataErrorBody"]');
+if (dataErrorBody) dataErrorBody.textContent = t("dataErrorBody");

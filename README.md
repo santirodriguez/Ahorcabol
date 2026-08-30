@@ -5,39 +5,41 @@
 </p>
 
 <p align="center">
-  <strong>Football hangman for people whose team did not ruin their day thoroughly enough.</strong>
+  <strong>Football hangman. Fewer tactics, more spelling.</strong>
 </p>
 
-Ahorcabol is a lightweight browser game about guessing football club names before the hangman catches up with you.
-
-No accounts. No ads. No framework. No build step. Just football, letters, and one more completely unnecessary reason to suffer.
+Ahorcabol is a football version of hangman: pick a league, guess the club, and try not to run out of lives before the name gives up first.
 
 ## Play
 
 **Play online:** https://santiagorodriguez.com/Ahorcabol/
 
-## What it does
+## The game
 
-- Guess current top-flight club names from Argentina, Brazil, England, France, Germany, Portugal and Spain, plus MLS clubs
-- Six lives with score, current streak and best streak
-- Hint and give-up controls with explicit round-end states
-- Shuffle-bag selection to avoid immediate team repeats
-- Country / league filtering
-- Spanish by default, plus English and Catalan
-- Physical and on-screen keyboard support, including a distinct `Ñ`
-- Responsive three-row keyboard on desktop and mobile
-- Lightweight goal, post, net and celebration animations
-- Optional WebAudio sound effects and SpeechSynthesis voice feedback, controlled separately
-- `localStorage` persistence for score, streaks, language, filter and audio preferences
-- Plain HTML, CSS and JavaScript with no dependencies
+- Pick one league or mix every club into the same bag.
+- You get six lives. Wrong letters spend them; hints are not exactly charity either.
+- Wins add points and keep your streak alive. Losing, giving up, or changing leagues mid-round does not.
+- Play with the on-screen keyboard or a physical one. `Ñ` gets its own key, as it should.
+- Sound effects and voice are optional.
+- The club pool is shuffled, so the same team should not immediately come back to haunt you.
 
-## Club data
+### Languages
 
-`teamlist.json` is the single source of truth for club names.
+- 🇦🇷 **Español**
+- 🇺🇸 **English**
+- <img src="assets/branding/senyera.svg" alt="Senyera" width="22"> **Català**
 
-The pool is aligned to the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
+## Clubs
 
-If the JSON cannot be loaded or its shape is invalid, the game fails closed with a retry control instead of silently using a stale embedded copy.
+The game includes clubs from Argentina, Brazil, England, France, Germany, Portugal, Spain and MLS.
+
+`teamlist.js` is the club list used by the game. It currently follows the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
+
+## Offline
+
+Download the repository ZIP, extract it, and open `index.html` directly. That's it.
+
+Everything needed to play is local. A static web server still works too, if you feel like making hangman slightly more official.
 
 ## Screenshot
 
@@ -46,30 +48,6 @@ If the JSON cannot be loaded or its shape is invalid, the game fails closed with
 </p>
 
 The screenshot above is from v1.5.0 and will be replaced with the v1.6.0 capture before release.
-
-## Controls
-
-- Select a country / league to restrict the club pool
-- Click or tap letters, or use a physical keyboard
-- `Hint` reveals one normalized letter and costs one life
-- `Give up` reveals the club and resets the current streak
-- Changing the country / league during an active round starts a new round and resets the streak
-- After a finished round, press `Enter` or use `Next team`
-
-## Scoring
-
-- Correct letter: **+100** per occurrence
-- Solved team: **+500 + 50 × remaining lives**
-- Hint: no letter points and **−1 life**
-- Loss / give up: streak resets to zero
-
-## Run locally
-
-Serve the repository directory with any static web server and open `index.html`.
-
-`teamlist.json` is loaded with `fetch()`, so serving the directory over HTTP is the supported local-development path.
-
-There is no build command. Society remains functional.
 
 ## Author
 
