@@ -14,6 +14,7 @@
   <link rel="icon" type="image/png" href="assets/branding/ahorcabol-icon.png" />
   <link rel="apple-touch-icon" href="assets/branding/ahorcabol-icon.png" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="polish.css" />
 </head>
 <body>
   <div class="stadium-bg" aria-hidden="true"></div>
@@ -33,9 +34,15 @@
 
       <div class="utility-bar">
         <nav class="language-switcher segmented" aria-label="Idioma" id="languageSwitcher">
-          <button class="segment active" type="button" data-lang="es-AR" aria-pressed="true">ES</button>
-          <button class="segment" type="button" data-lang="en-US" aria-pressed="false">EN</button>
-          <button class="segment" type="button" data-lang="ca" aria-pressed="false">CA</button>
+          <button class="segment active" type="button" data-lang="es-AR" aria-label="Español" title="Español" aria-pressed="true">
+            <span class="flag-emoji" aria-hidden="true">🇦🇷</span>
+          </button>
+          <button class="segment" type="button" data-lang="en-US" aria-label="English" title="English" aria-pressed="false">
+            <span class="flag-emoji" aria-hidden="true">🇺🇸</span>
+          </button>
+          <button class="segment" type="button" data-lang="ca" aria-label="Català" title="Català" aria-pressed="false">
+            <img class="language-flag" src="assets/branding/senyera.svg" alt="" aria-hidden="true" width="27" height="18" />
+          </button>
         </nav>
 
         <div class="audio-controls" id="audioControls" aria-label="Audio">
@@ -224,5 +231,6 @@
   </main>
 
   <script src="script.js" defer></script>
+  <script src="enhancements.js" defer></script>
 </body>
 </html>

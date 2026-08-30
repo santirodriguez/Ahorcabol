@@ -85,6 +85,41 @@
     ]
   },
   {
+    "pais": "MLS",
+    "equipos": [
+      "Atlanta United",
+      "Austin FC",
+      "Charlotte FC",
+      "Chicago Fire FC",
+      "FC Cincinnati",
+      "Colorado Rapids",
+      "Columbus Crew",
+      "D.C. United",
+      "FC Dallas",
+      "Houston Dynamo FC",
+      "Inter Miami CF",
+      "LA Galaxy",
+      "Los Angeles Football Club",
+      "Minnesota United FC",
+      "CF Montréal",
+      "Nashville SC",
+      "New England Revolution",
+      "New York City FC",
+      "Orlando City SC",
+      "Philadelphia Union",
+      "Portland Timbers",
+      "Real Salt Lake",
+      "Red Bull New York",
+      "San Diego FC",
+      "San Jose Earthquakes",
+      "Seattle Sounders FC",
+      "Sporting Kansas City",
+      "St. Louis CITY SC",
+      "Toronto FC",
+      "Vancouver Whitecaps FC"
+    ]
+  },
+  {
     "pais": "Alemania",
     "equipos": [
       "Augsburg",
