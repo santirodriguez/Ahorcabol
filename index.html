@@ -3,175 +3,223 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#071a32" />
-  <title>Ahorcabol — Football Hangman</title>
+  <meta name="theme-color" content="#07131f" />
+  <meta name="color-scheme" content="dark" />
+  <meta
+    id="metaDescription"
+    name="description"
+    content="Ahorcabol es un ahorcado futbolero para adivinar clubes antes de quedarte sin vidas."
+  />
+  <title>Ahorcabol — Ahorcado futbolero</title>
+  <link rel="icon" type="image/png" href="assets/branding/ahorcabol-icon.png" />
+  <link rel="apple-touch-icon" href="assets/branding/ahorcabol-icon.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="stadium-bg" aria-hidden="true"></div>
 
   <main class="app">
-    <header class="hero">
-      <div class="brand-wrap">
-        <img class="brand-logo" src="assets/branding/ahorcabol-logo-1.svg" alt="Ahorcabol" />
-      </div>
+    <header class="topbar">
+      <picture class="brand-picture">
+        <source media="(max-width: 520px)" srcset="assets/branding/ahorcabol-head-small.png" />
+        <source media="(max-width: 900px)" srcset="assets/branding/ahorcabol-head-medium.png" />
+        <img
+          class="brand-logo"
+          src="assets/branding/ahorcabol-head.png"
+          alt="Ahorcabol"
+          decoding="async"
+        />
+      </picture>
 
-      <nav class="language-switcher" aria-label="Idioma" id="languageSwitcher">
-        <button class="language-btn active" type="button" data-lang="es-AR" aria-label="Español" title="Español" aria-pressed="true">
-          <span class="flag flag-ar" aria-hidden="true"></span>
-        </button>
-        <button class="language-btn" type="button" data-lang="en-US" aria-label="English" title="English" aria-pressed="false">
-          <span class="flag flag-us" aria-hidden="true"></span>
-        </button>
-        <button class="language-btn" type="button" data-lang="ca" aria-label="Català" title="Català" aria-pressed="false">
-          <span class="flag flag-ca" aria-hidden="true"></span>
-        </button>
-      </nav>
+      <div class="utility-bar">
+        <nav class="language-switcher segmented" aria-label="Idioma" id="languageSwitcher">
+          <button class="segment active" type="button" data-lang="es-AR" aria-pressed="true">ES</button>
+          <button class="segment" type="button" data-lang="en-US" aria-pressed="false">EN</button>
+          <button class="segment" type="button" data-lang="ca" aria-pressed="false">CA</button>
+        </nav>
+
+        <div class="audio-controls" id="audioControls" aria-label="Audio">
+          <button id="sfxToggle" class="chip-toggle active" type="button" aria-pressed="true">
+            <span class="toggle-dot" aria-hidden="true"></span>
+            <span data-i18n="sfx">SFX</span>
+          </button>
+          <button id="voiceToggle" class="chip-toggle" type="button" aria-pressed="false">
+            <span class="toggle-dot" aria-hidden="true"></span>
+            <span data-i18n="voice">Voz</span>
+          </button>
+        </div>
+      </div>
     </header>
 
-    <section class="match-panel" aria-label="Controles del partido">
-      <div class="match-controls">
-        <label class="country-control" for="countrySelect">
-          <span class="control-label" data-i18n="country">País</span>
-          <select id="countrySelect">
-            <option value="ALL">Todos</option>
-          </select>
-        </label>
-        <button id="newGameBtn" class="btn primary" type="button" data-i18n="newGame">Nuevo partido</button>
-      </div>
+    <section class="matchbar" aria-label="Controles del partido" id="matchPanel">
+      <label class="filter-control" for="countrySelect">
+        <span class="control-label" data-i18n="league">Liga / país</span>
+        <select id="countrySelect" aria-describedby="filterHelp">
+          <option value="ALL">Todos</option>
+        </select>
+        <span id="filterHelp" class="sr-only" data-i18n="filterHelp">
+          Cambiar el filtro durante una ronda inicia otra y reinicia la racha.
+        </span>
+      </label>
 
-      <div class="scoreboard" aria-label="Marcador">
-        <div class="score-tile">
-          <div class="label" data-i18n="score">Puntos</div>
-          <div id="score" class="value">0</div>
+      <div class="scorebar" id="scoreboard" aria-label="Marcador">
+        <div class="stat">
+          <span class="stat-label" data-i18n="score">Puntos</span>
+          <strong id="score" class="stat-value">0</strong>
         </div>
-        <div class="score-tile">
-          <div class="label" data-i18n="streak">Racha</div>
-          <div id="streak" class="value">0</div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="streak">Racha</span>
+          <strong id="streak" class="stat-value">0</strong>
         </div>
-        <div class="score-tile lives-tile">
-          <div class="label" data-i18n="lives">Vidas</div>
-          <div id="lives" class="value">6</div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="best">Mejor</span>
+          <strong id="bestStreak" class="stat-value">0</strong>
         </div>
       </div>
     </section>
 
-    <section class="arena" aria-label="Cancha de Ahorcabol">
-      <div class="arena-light" aria-hidden="true"></div>
-      <svg id="goalSvg" viewBox="0 0 360 230" class="goal" aria-hidden="true">
-        <defs>
-          <linearGradient id="pitchGlow" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stop-color="#2f9f58" />
-            <stop offset="1" stop-color="#0f5f35" />
-          </linearGradient>
-          <linearGradient id="postGlow" x1="0" x2="1">
-            <stop offset="0" stop-color="#f7fbff" />
-            <stop offset="0.5" stop-color="#9fd9ff" />
-            <stop offset="1" stop-color="#ffffff" />
-          </linearGradient>
-          <radialGradient id="ballShine" cx="32%" cy="28%">
-            <stop offset="0%" stop-color="#ffffff" />
-            <stop offset="72%" stop-color="#edf6ff" />
-            <stop offset="100%" stop-color="#a8c8e8" />
-          </radialGradient>
-        </defs>
+    <section class="arena" aria-label="Cancha de Ahorcabol" id="arena">
+      <div class="arena-head">
+        <div>
+          <span class="eyebrow" data-i18n="challenge">Desafío</span>
+          <strong id="countryBadge" class="country-badge">—</strong>
+        </div>
 
-        <path class="pitch-mark" d="M0 183 H360" />
-        <rect x="0" y="178" width="360" height="52" class="grass"></rect>
-        <path class="box-line" d="M42 178 L62 145 H298 L318 178" />
-
-        <g opacity="0.22">
-          <rect x="44" y="42" width="8" height="136" rx="4" class="post"></rect>
-          <rect x="308" y="42" width="8" height="136" rx="4" class="post"></rect>
-          <rect x="48" y="42" width="264" height="8" rx="4" class="crossbar"></rect>
-          <path class="net-frame net-rect" d="M52 50 H308 V178 H52 Z" />
-          <g class="net-lines">
-            <line x1="76" y1="50" x2="76" y2="178" />
-            <line x1="100" y1="50" x2="100" y2="178" />
-            <line x1="124" y1="50" x2="124" y2="178" />
-            <line x1="148" y1="50" x2="148" y2="178" />
-            <line x1="172" y1="50" x2="172" y2="178" />
-            <line x1="196" y1="50" x2="196" y2="178" />
-            <line x1="220" y1="50" x2="220" y2="178" />
-            <line x1="244" y1="50" x2="244" y2="178" />
-            <line x1="268" y1="50" x2="268" y2="178" />
-            <line x1="292" y1="50" x2="292" y2="178" />
-            <line x1="52" y1="72" x2="308" y2="72" />
-            <line x1="52" y1="96" x2="308" y2="96" />
-            <line x1="52" y1="120" x2="308" y2="120" />
-            <line x1="52" y1="144" x2="308" y2="144" />
-          </g>
-        </g>
-
-        <rect x="44" y="42" width="8" height="136" rx="4" class="post hidden s1"></rect>
-        <rect x="308" y="42" width="8" height="136" rx="4" class="post hidden s2"></rect>
-        <rect x="48" y="42" width="264" height="8" rx="4" class="crossbar hidden s3"></rect>
-
-        <g class="net hidden s4">
-          <path class="net-frame" d="M52 50 H308 V178 H52 Z" />
-          <g class="net-lines">
-            <line x1="76" y1="50" x2="76" y2="178" />
-            <line x1="100" y1="50" x2="100" y2="178" />
-            <line x1="124" y1="50" x2="124" y2="178" />
-            <line x1="148" y1="50" x2="148" y2="178" />
-            <line x1="172" y1="50" x2="172" y2="178" />
-            <line x1="196" y1="50" x2="196" y2="178" />
-            <line x1="220" y1="50" x2="220" y2="178" />
-            <line x1="244" y1="50" x2="244" y2="178" />
-            <line x1="268" y1="50" x2="268" y2="178" />
-            <line x1="292" y1="50" x2="292" y2="178" />
-            <line x1="52" y1="72" x2="308" y2="72" />
-            <line x1="52" y1="96" x2="308" y2="96" />
-            <line x1="52" y1="120" x2="308" y2="120" />
-            <line x1="52" y1="144" x2="308" y2="144" />
-          </g>
-          <rect x="52" y="50" width="256" height="128" class="net-rect"></rect>
-        </g>
-
-        <g class="hanger hidden s5">
-          <line x1="180" y1="50" x2="180" y2="62" class="rope" />
-          <circle cx="180" cy="78" r="16" class="man-head"></circle>
-          <path d="M173 77 Q180 82 187 77" class="man-face" />
-          <circle cx="175" cy="73" r="1.5" class="man-eye"></circle>
-          <circle cx="185" cy="73" r="1.5" class="man-eye"></circle>
-          <line x1="180" y1="94" x2="180" y2="128" class="man-line"></line>
-          <line x1="180" y1="104" x2="161" y2="119" class="man-line"></line>
-          <line x1="180" y1="104" x2="199" y2="119" class="man-line"></line>
-        </g>
-        <g class="hanger hidden s6">
-          <line x1="180" y1="128" x2="164" y2="156" class="man-line"></line>
-          <line x1="180" y1="128" x2="196" y2="156" class="man-line"></line>
-          <circle cx="159" cy="122" r="4" class="boot"></circle>
-          <circle cx="201" cy="122" r="4" class="boot"></circle>
-        </g>
-
-        <g id="ball" class="ball-svg idle">
-          <circle cx="113" cy="171" r="14" class="ball-core"></circle>
-          <polygon points="113,161 106,167 109,175 117,175 120,167" class="ball-cell"></polygon>
-          <path d="M101 169 L106 167 M125 169 L120 167 M109 175 L105 181 M117 175 L121 181" class="ball-seam"></path>
-        </g>
-      </svg>
-
-      <div class="status-strip">
-        <span class="status-dot" aria-hidden="true"></span>
-        <div id="toast" class="toast" aria-live="polite"></div>
+        <div class="lives" id="livesWrap" aria-live="polite">
+          <span id="livesLabel" class="lives-label">6 vidas</span>
+          <div id="lifePips" class="life-pips" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
       </div>
-      <div id="redCard" class="red-card" aria-hidden="true">🟥</div>
-      <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+
+      <div class="pitch-stage">
+        <div class="arena-light" aria-hidden="true"></div>
+
+        <svg id="goalSvg" viewBox="0 0 360 230" class="goal" aria-hidden="true">
+          <defs>
+            <linearGradient id="pitchGlow" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#2c9a5b" />
+              <stop offset="1" stop-color="#0b5b38" />
+            </linearGradient>
+            <linearGradient id="postGlow" x1="0" x2="1">
+              <stop offset="0" stop-color="#f8fbff" />
+              <stop offset="0.5" stop-color="#c6e8ff" />
+              <stop offset="1" stop-color="#ffffff" />
+            </linearGradient>
+            <radialGradient id="ballShine" cx="32%" cy="28%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="72%" stop-color="#edf6ff" />
+              <stop offset="100%" stop-color="#a8c8e8" />
+            </radialGradient>
+          </defs>
+
+          <rect x="0" y="178" width="360" height="52" class="grass"></rect>
+          <path class="pitch-mark" d="M0 183 H360" />
+          <path class="box-line" d="M42 178 L62 145 H298 L318 178" />
+
+          <g class="goal-frame">
+            <rect x="44" y="42" width="8" height="136" rx="4" class="post"></rect>
+            <rect x="308" y="42" width="8" height="136" rx="4" class="post"></rect>
+            <rect x="48" y="42" width="264" height="8" rx="4" class="crossbar"></rect>
+
+            <g class="net">
+              <path class="net-frame" d="M52 50 H308 V178 H52 Z" />
+              <g class="net-lines">
+                <line x1="76" y1="50" x2="76" y2="178" />
+                <line x1="100" y1="50" x2="100" y2="178" />
+                <line x1="124" y1="50" x2="124" y2="178" />
+                <line x1="148" y1="50" x2="148" y2="178" />
+                <line x1="172" y1="50" x2="172" y2="178" />
+                <line x1="196" y1="50" x2="196" y2="178" />
+                <line x1="220" y1="50" x2="220" y2="178" />
+                <line x1="244" y1="50" x2="244" y2="178" />
+                <line x1="268" y1="50" x2="268" y2="178" />
+                <line x1="292" y1="50" x2="292" y2="178" />
+                <line x1="52" y1="72" x2="308" y2="72" />
+                <line x1="52" y1="96" x2="308" y2="96" />
+                <line x1="52" y1="120" x2="308" y2="120" />
+                <line x1="52" y1="144" x2="308" y2="144" />
+              </g>
+              <rect x="52" y="50" width="256" height="128" class="net-rect"></rect>
+            </g>
+          </g>
+
+          <line x1="180" y1="50" x2="180" y2="61" class="rope"></line>
+
+          <g class="hangman">
+            <g class="hang-part s1">
+              <circle cx="180" cy="78" r="16" class="man-head"></circle>
+              <circle cx="175" cy="74" r="1.5" class="man-eye"></circle>
+              <circle cx="185" cy="74" r="1.5" class="man-eye"></circle>
+              <path d="M174 83 Q180 79 186 83" class="man-face"></path>
+            </g>
+            <line x1="180" y1="94" x2="180" y2="128" class="man-line hang-part s2"></line>
+            <line x1="180" y1="104" x2="160" y2="120" class="man-line hang-part s3"></line>
+            <line x1="180" y1="104" x2="200" y2="120" class="man-line hang-part s4"></line>
+            <line x1="180" y1="128" x2="164" y2="157" class="man-line hang-part s5"></line>
+            <line x1="180" y1="128" x2="196" y2="157" class="man-line hang-part s6"></line>
+          </g>
+
+          <g id="ball" class="ball-svg idle">
+            <circle cx="113" cy="171" r="14" class="ball-core"></circle>
+            <polygon points="113,161 106,167 109,175 117,175 120,167" class="ball-cell"></polygon>
+            <path d="M101 169 L106 167 M125 169 L120 167 M109 175 L105 181 M117 175 L121 181" class="ball-seam"></path>
+          </g>
+        </svg>
+
+        <div id="redCard" class="red-card" aria-hidden="true"></div>
+        <div id="confetti" class="confetti-layer" aria-hidden="true"></div>
+
+        <div id="statusStrip" class="status-strip">
+          <span class="status-dot" aria-hidden="true"></span>
+          <p id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></p>
+        </div>
+      </div>
     </section>
 
-    <section class="word" aria-label="Equipo oculto">
-      <div id="maskedWord" class="tiles" aria-live="polite" aria-label="Equipo oculto"></div>
-      <div class="hint-row">
-        <button id="hintBtn" class="btn ghost" type="button" data-i18n="hint">Pista (−1 vida)</button>
-        <button id="giveUpBtn" class="btn danger" type="button" data-i18n="giveUp">Me rindo</button>
+    <section class="puzzle-card" aria-label="Equipo oculto" id="wordSection">
+      <div id="maskedWord" class="word-board" aria-live="polite" aria-label="Equipo oculto"></div>
+
+      <div id="playActions" class="action-row">
+        <button id="hintBtn" class="btn secondary" type="button" data-i18n="hint">Pista (−1 vida)</button>
+        <button id="giveUpBtn" class="btn danger-quiet" type="button" data-i18n="giveUp">Me rindo</button>
+      </div>
+
+      <div id="resultPanel" class="result-panel" hidden>
+        <div class="result-copy">
+          <span id="resultEyebrow" class="eyebrow"></span>
+          <h2 id="resultTitle"></h2>
+          <p id="resultSummary"></p>
+        </div>
+        <div class="result-metrics">
+          <div>
+            <span data-i18n="roundPoints">Puntos de la ronda</span>
+            <strong id="roundPoints">0</strong>
+          </div>
+          <div>
+            <span data-i18n="currentStreak">Racha actual</span>
+            <strong id="resultStreak">0</strong>
+          </div>
+        </div>
+        <button id="nextGameBtn" class="btn primary" type="button" data-i18n="nextTeam">Siguiente equipo</button>
+      </div>
+
+      <div id="dataErrorPanel" class="data-error" hidden>
+        <div>
+          <span class="eyebrow" data-i18n="dataErrorEyebrow">Datos</span>
+          <h2 data-i18n="dataErrorTitle">No pudimos cargar los equipos.</h2>
+          <p data-i18n="dataErrorBody">Revisá la conexión y volvé a intentarlo.</p>
+        </div>
+        <button id="retryDataBtn" class="btn primary" type="button" data-i18n="retry">Reintentar</button>
       </div>
     </section>
 
     <section class="keyboard" id="keyboard" aria-label="Teclado"></section>
 
     <footer class="foot">
-      <small data-i18n="footer">Ahorcabol — una forma más gráfica de querer colgarte después de ver perder a tu equipo.</small>
+      <small data-i18n="footer">Ahorcabol — fútbol, letras y decisiones cuestionables.</small>
+      <a href="https://santiagorodriguez.com/donate" data-i18n="donate">Donar</a>
     </footer>
   </main>
 

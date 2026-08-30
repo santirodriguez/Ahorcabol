@@ -1,30 +1,181 @@
 [
   {
     "pais": "Argentina",
-    "equipos": ["Argentinos Juniors", "Atlético Tucumán", "Banfield", "Barracas Central", "Belgrano", "Boca Juniors", "Central Córdoba", "Defensa y Justicia", "Deportivo Riestra", "Estudiantes de La Plata", "Gimnasia y Esgrima La Plata", "Godoy Cruz", "Huracán", "Independiente", "Independiente Rivadavia", "Instituto de Córdoba", "Lanús", "Newell’s Old Boys", "Platense", "Racing", "River Plate", "Rosario Central", "San Lorenzo", "San Martín de San Juan", "Sarmiento", "Talleres de Córdoba", "Tigre", "Unión de Santa Fe", "Vélez Sarsfield"]
+    "equipos": [
+      "Aldosivi",
+      "Argentinos Juniors",
+      "Atlético Tucumán",
+      "Banfield",
+      "Barracas Central",
+      "Belgrano",
+      "Boca Juniors",
+      "Central Córdoba",
+      "Defensa y Justicia",
+      "Deportivo Riestra",
+      "Estudiantes de La Plata",
+      "Estudiantes de Río Cuarto",
+      "Gimnasia y Esgrima de Mendoza",
+      "Gimnasia y Esgrima La Plata",
+      "Huracán",
+      "Independiente",
+      "Independiente Rivadavia",
+      "Instituto de Córdoba",
+      "Lanús",
+      "Newell's Old Boys",
+      "Platense",
+      "Racing",
+      "River Plate",
+      "Rosario Central",
+      "San Lorenzo",
+      "Sarmiento",
+      "Talleres de Córdoba",
+      "Tigre",
+      "Unión de Santa Fe",
+      "Vélez Sarsfield"
+    ]
   },
   {
     "pais": "España",
-    "equipos": ["Alavés", "Athletic Club", "Atlético de Madrid", "Barcelona", "Celta de Vigo", "Elche", "Espanyol", "Getafe", "Girona", "Levante", "Mallorca", "Osasuna", "Rayo Vallecano", "Real Betis", "Real Madrid", "Real Oviedo", "Real Sociedad", "Sevilla", "Valencia", "Villarreal"]
+    "equipos": [
+      "Alavés",
+      "Athletic Club",
+      "Atlético de Madrid",
+      "Barcelona",
+      "Celta de Vigo",
+      "Deportivo La Coruña",
+      "Elche",
+      "Espanyol",
+      "Getafe",
+      "Levante",
+      "Málaga",
+      "Osasuna",
+      "Racing de Santander",
+      "Rayo Vallecano",
+      "Real Betis",
+      "Real Madrid",
+      "Real Sociedad",
+      "Sevilla",
+      "Valencia",
+      "Villarreal"
+    ]
   },
   {
     "pais": "Inglaterra",
-    "equipos": ["Arsenal", "Aston Villa", "Bournemouth", "Brentford", "Brighton", "Burnley", "Chelsea", "Crystal Palace", "Everton", "Fulham", "Leeds United", "Liverpool", "Manchester City", "Manchester United", "Newcastle United", "Nottingham Forest", "Sunderland", "Tottenham Hotspur", "West Ham United", "Wolverhampton Wanderers"]
+    "equipos": [
+      "Arsenal",
+      "Aston Villa",
+      "Bournemouth",
+      "Brentford",
+      "Brighton & Hove Albion",
+      "Chelsea",
+      "Coventry City",
+      "Crystal Palace",
+      "Everton",
+      "Fulham",
+      "Hull City",
+      "Ipswich Town",
+      "Leeds United",
+      "Liverpool",
+      "Manchester City",
+      "Manchester United",
+      "Newcastle United",
+      "Nottingham Forest",
+      "Sunderland",
+      "Tottenham Hotspur"
+    ]
   },
   {
     "pais": "Alemania",
-    "equipos": ["Augsburg", "Union Berlin", "Werder Bremen", "Borussia Dortmund", "Eintracht Frankfurt", "Freiburg", "Hamburg", "Heidenheim", "Hoffenheim", "Köln", "RB Leipzig", "Bayer Leverkusen", "Mainz", "Borussia Mönchengladbach", "Bayern München", "St. Pauli", "Stuttgart", "Wolfsburg"]
+    "equipos": [
+      "Augsburg",
+      "Bayer Leverkusen",
+      "Bayern München",
+      "Borussia Dortmund",
+      "Borussia Mönchengladbach",
+      "Eintracht Frankfurt",
+      "Elversberg",
+      "Freiburg",
+      "Hamburg",
+      "Hoffenheim",
+      "Köln",
+      "Mainz",
+      "Paderborn",
+      "RB Leipzig",
+      "Schalke 04",
+      "Stuttgart",
+      "Union Berlin",
+      "Werder Bremen"
+    ]
   },
   {
     "pais": "Francia",
-    "equipos": ["Paris Saint-Germain", "Marseille", "Strasbourg", "Lyon", "Monaco", "Lens", "Lille", "Brest", "Nice", "Nantes", "Rennes", "Lorient", "Le Havre", "Auxerre", "Metz", "Angers"]
+    "equipos": [
+      "Angers",
+      "Auxerre",
+      "Brest",
+      "Le Havre",
+      "Le Mans",
+      "Lens",
+      "Lille",
+      "Lorient",
+      "Lyon",
+      "Marseille",
+      "Monaco",
+      "Nice",
+      "Paris FC",
+      "Paris Saint-Germain",
+      "Rennes",
+      "Strasbourg",
+      "Toulouse",
+      "Troyes"
+    ]
   },
   {
     "pais": "Portugal",
-    "equipos": ["Porto", "Sporting CP", "Benfica", "Braga", "Gil Vicente", "Moreirense", "Famalicão", "Vitória de Guimarães", "Nacional", "Alverca", "Arouca", "Rio Ave", "Santa Clara", "Casa Pia", "Estrela da Amadora", "Estoril", "Tondela", "AVS"]
+    "equipos": [
+      "Académico de Viseu",
+      "Alverca",
+      "Arouca",
+      "Benfica",
+      "Braga",
+      "Casa Pia",
+      "Estoril",
+      "Estrela da Amadora",
+      "Famalicão",
+      "Gil Vicente",
+      "Marítimo",
+      "Moreirense",
+      "Nacional",
+      "Porto",
+      "Rio Ave",
+      "Santa Clara",
+      "Sporting CP",
+      "Vitória de Guimarães"
+    ]
   },
   {
     "pais": "Brasil",
-    "equipos": ["Flamengo", "Palmeiras", "Red Bull Bragantino", "Fluminense", "Ceará", "Cruzeiro", "Corinthians", "Bahia", "Internacional", "Botafogo", "São Paulo", "Vasco da Gama", "Juventude", "Mirassol", "Fortaleza", "Atlético Mineiro", "Vitória", "Grêmio", "Santos", "Sport Recife"]
+    "equipos": [
+      "Athletico Paranaense",
+      "Atlético Mineiro",
+      "Bahia",
+      "Botafogo",
+      "Chapecoense",
+      "Corinthians",
+      "Coritiba",
+      "Cruzeiro",
+      "Flamengo",
+      "Fluminense",
+      "Grêmio",
+      "Internacional",
+      "Mirassol",
+      "Palmeiras",
+      "Red Bull Bragantino",
+      "Remo",
+      "Santos",
+      "São Paulo",
+      "Vasco da Gama",
+      "Vitória"
+    ]
   }
 ]
