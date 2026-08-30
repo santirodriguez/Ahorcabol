@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="64" viewBox="0 0 220 64" role="img" aria-labelledby="title desc">
+  <title id="title">Support Ahorcabol — Donate</title>
+  <desc id="desc">Donate to support Ahorcabol</desc>
+  <rect x="1.5" y="1.5" width="217" height="61" rx="12" fill="#03101f" stroke="#1ca5ee" stroke-width="3"/>
+  <path d="M39 45.5 26.1 32.8C19.1 25.9 29.2 15.8 36.2 22.8L39 25.6l2.8-2.8c7-7 17.1 3.1 10.1 10Z" fill="#9be34b"/>
+  <text x="72" y="25" fill="#a8bfd5" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" letter-spacing="1.5">SUPPORT AHORCABOL</text>
+  <text x="72" y="47" fill="#f4fbff" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700">Donate</text>
+</svg>
