@@ -3,7 +3,9 @@
 const LANGUAGES = ["es-AR", "en-US", "ca"];
 const DEFAULT_LANGUAGE = "es-AR";
 const STORAGE_KEY = "ahorcabol";
+const STORAGE_VERSION = 2;
 const MAX_LIVES = 6;
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZÑ";
 const KB_ROWS = ["QWERTYUIOP", "ASDFGHJKLÑ", "ZXCVBNM"];
 
 const ROUND = Object.freeze({
@@ -17,6 +19,13 @@ const ROUND = Object.freeze({
 
 const I18N = {
   "es-AR": {
+    howToPlay: "Cómo jugar",
+    helpRules: "Elegí una liga y adiviná el club con el teclado o tocando las letras. Tenés 6 vidas: cada error cuesta una. Las tildes no cambian la letra; la Ñ sí es distinta. Números y signos ya aparecen.",
+    helpPoints: "Cada letra revelada al acertar suma 100 puntos. Ganar suma 500 más 50 por vida restante. Una pista revela una letra en todas sus posiciones y cuesta una vida, sin sumar puntos por esas letras. No se puede pedir con una sola vida.",
+    helpSave: "Cambiar de liga durante una ronda o rendirte reinicia la racha. El puntaje se conserva. Si el navegador permite guardar datos, podés retomar la partida al volver.",
+    correctLetter: "Correcta",
+    wrongLetter: "Incorrecta",
+
     htmlLang: "es-AR",
     locale: "es-AR",
     title: "Ahorcabol — Ahorcado futbolero",
@@ -69,7 +78,7 @@ const I18N = {
     wonSummary: "Era {team}. Sumaste la ronda.",
     lostSummary: "El equipo era {team}. La racha vuelve a cero.",
     gaveUpSummary: "El equipo era {team}. La racha vuelve a cero.",
-    voiceUnavailable: "La voz no está disponible en este navegador.",
+    voiceUnavailable: "No hay una voz disponible para este idioma en el navegador.",
     sfxUnavailable: "El audio no está disponible en este navegador.",
     speechGoal: "¡Gooooool!",
     speechOut: "¡Fuera!",
@@ -78,6 +87,13 @@ const I18N = {
     manyLives: "{count} vidas"
   },
   "en-US": {
+    howToPlay: "How to play",
+    helpRules: "Choose a league and guess the club by typing or tapping letters. You have 6 lives: each miss costs one. Accents do not change a letter; Ñ is a separate letter. Numbers and punctuation are already shown.",
+    helpPoints: "Each letter revealed by a correct guess earns 100 points. Winning adds 500 plus 50 per remaining life. A hint reveals a letter everywhere and costs one life, without earning letter points. Hints are unavailable with one life left.",
+    helpSave: "Changing leagues mid-round or giving up resets your streak. Your score stays. If your browser allows saved data, you can return to your game later.",
+    correctLetter: "Correct",
+    wrongLetter: "Incorrect",
+
     htmlLang: "en-US",
     locale: "en-US",
     title: "Ahorcabol — Football Hangman",
@@ -130,7 +146,7 @@ const I18N = {
     wonSummary: "It was {team}. Round complete.",
     lostSummary: "The team was {team}. Your streak is back to zero.",
     gaveUpSummary: "The team was {team}. Your streak is back to zero.",
-    voiceUnavailable: "Voice is not available in this browser.",
+    voiceUnavailable: "No voice is available for this language in the browser.",
     sfxUnavailable: "Audio is not available in this browser.",
     speechGoal: "Goal!",
     speechOut: "Wide!",
@@ -139,6 +155,13 @@ const I18N = {
     manyLives: "{count} lives"
   },
   ca: {
+    howToPlay: "Com es juga",
+    helpRules: "Tria una lliga i endevina el club amb el teclat o tocant les lletres. Tens 6 vides: cada error en costa una. Els accents no canvien la lletra; la Ñ és una lletra diferent. Els números i els signes ja es mostren.",
+    helpPoints: "Cada lletra revelada amb un encert suma 100 punts. Guanyar suma 500 més 50 per vida restant. Una pista revela una lletra a totes les posicions i costa una vida, sense sumar punts per aquestes lletres. No es pot demanar amb una sola vida.",
+    helpSave: "Canviar de lliga durant una ronda o rendir-te reinicia la ratxa. La puntuació es conserva. Si el navegador permet desar dades, pots reprendre la partida quan tornis.",
+    correctLetter: "Correcta",
+    wrongLetter: "Incorrecta",
+
     htmlLang: "ca",
     locale: "ca-ES",
     title: "Ahorcabol — Penjat futboler",
@@ -191,7 +214,7 @@ const I18N = {
     wonSummary: "Era {team}. Ronda completada.",
     lostSummary: "L'equip era {team}. La ratxa torna a zero.",
     gaveUpSummary: "L'equip era {team}. La ratxa torna a zero.",
-    voiceUnavailable: "La veu no està disponible en aquest navegador.",
+    voiceUnavailable: "No hi ha cap veu disponible per a aquest idioma al navegador.",
     sfxUnavailable: "L'àudio no està disponible en aquest navegador.",
     speechGoal: "Gol!",
     speechOut: "Fora!",
@@ -216,8 +239,8 @@ const SPOKEN_LETTERS = {
   "es-AR": {
     A: "a", B: "be", C: "ce", D: "de", E: "e", F: "efe", G: "ge", H: "hache",
     I: "i", J: "jota", K: "ka", L: "ele", M: "eme", N: "ene", "Ñ": "eñe", O: "o",
-    P: "pe", Q: "cu", R: "erre", S: "ese", T: "te", U: "u", V: "uve",
-    W: "doble uve", X: "equis", Y: "ye", Z: "zeta"
+    P: "pe", Q: "cu", R: "erre", S: "ese", T: "te", U: "u", V: "ve",
+    W: "doble ve", X: "equis", Y: "ye", Z: "zeta"
   },
   "en-US": {
     A: "A", B: "B", C: "C", D: "D", E: "E", F: "F", G: "G", H: "H", I: "I",
@@ -250,7 +273,8 @@ const state = {
   country: "ALL",
   sfxEnabled: true,
   voiceEnabled: false,
-  roundStatus: ROUND.LOADING
+  roundStatus: ROUND.LOADING,
+  savedRound: null
 };
 
 const els = {
@@ -307,19 +331,18 @@ function countryLabel(country) {
 }
 
 function normalizeLetter(character) {
-  const upper = String(character).toLocaleUpperCase("es");
+  const value = String(character).normalize("NFC");
+  if ([...value].length !== 1) return "";
+  const upper = value.toLocaleUpperCase("es");
   if (upper === "Ñ") return "Ñ";
-
-  return upper
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .replace(/[^A-Z]/g, "")
-    .slice(0, 1);
+  const normalized = upper.normalize("NFD").replace(/\p{M}/gu, "");
+  return /^[A-Z]$/.test(normalized) ? normalized : "";
 }
 
 function safeReadStorage() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -328,15 +351,33 @@ function safeReadStorage() {
 function loadPersist() {
   const saved = safeReadStorage();
 
-  if (Number.isFinite(saved.score) && saved.score >= 0) state.score = saved.score;
-  if (Number.isFinite(saved.streak) && saved.streak >= 0) state.streak = saved.streak;
-  if (Number.isFinite(saved.bestStreak) && saved.bestStreak >= 0) state.bestStreak = saved.bestStreak;
+  if (Number.isSafeInteger(saved.score) && saved.score >= 0) state.score = saved.score;
+  if (Number.isSafeInteger(saved.streak) && saved.streak >= 0) state.streak = saved.streak;
+  if (Number.isSafeInteger(saved.bestStreak) && saved.bestStreak >= 0) state.bestStreak = saved.bestStreak;
   if (LANGUAGES.includes(saved.language)) state.language = saved.language;
   if (typeof saved.country === "string") state.country = saved.country;
   if (typeof saved.sfxEnabled === "boolean") state.sfxEnabled = saved.sfxEnabled;
   if (typeof saved.voiceEnabled === "boolean") state.voiceEnabled = saved.voiceEnabled;
+  if (saved.version === STORAGE_VERSION && saved.round && typeof saved.round === "object") {
+    state.savedRound = saved.round;
+  }
 
   state.bestStreak = Math.max(state.bestStreak, state.streak);
+}
+
+function currentRoundSnapshot() {
+  if (!state.current || ![ROUND.PLAYING, ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) {
+    return null;
+  }
+
+  return {
+    team: state.current.nombre,
+    teamCountry: state.current.pais,
+    status: state.roundStatus,
+    lives: state.lives,
+    guessed: [...state.guessed],
+    roundStartScore: state.roundStartScore
+  };
 }
 
 function savePersist() {
@@ -344,13 +385,15 @@ function savePersist() {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
+        version: STORAGE_VERSION,
         score: state.score,
         streak: state.streak,
         bestStreak: state.bestStreak,
         language: state.language,
         country: state.country,
         sfxEnabled: state.sfxEnabled,
-        voiceEnabled: state.voiceEnabled
+        voiceEnabled: state.voiceEnabled,
+        round: currentRoundSnapshot() || state.savedRound
       })
     );
   } catch {
@@ -368,7 +411,7 @@ function beep(freq = 880, duration = 0.08, type = "square", volume = 0.03) {
 
   try {
     audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume();
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
 
     const oscillator = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
@@ -377,6 +420,10 @@ function beep(freq = 880, duration = 0.08, type = "square", volume = 0.03) {
     gain.gain.value = volume;
     oscillator.connect(gain);
     gain.connect(audioCtx.destination);
+    oscillator.onended = () => {
+      oscillator.disconnect();
+      gain.disconnect();
+    };
     oscillator.start();
     oscillator.stop(audioCtx.currentTime + duration);
   } catch {
@@ -389,17 +436,21 @@ const sfx = {
   bad() { beep(240, 0.1, "sawtooth", 0.05); },
   win() {
     [880, 990, 1180].forEach((freq, index) => {
-      window.setTimeout(() => beep(freq, 0.1, "triangle", 0.05), index * 110);
+      scheduleEffect(() => beep(freq, 0.1, "triangle", 0.05), index * 110);
     });
   },
   lose() {
     [300, 220, 180].forEach((freq, index) => {
-      window.setTimeout(() => beep(freq, 0.13, "sawtooth", 0.055), index * 125);
+      scheduleEffect(() => beep(freq, 0.13, "sawtooth", 0.055), index * 125);
     });
   }
 };
 
 let voices = [];
+function cancelSpeech() {
+  try { window.speechSynthesis?.cancel(); } catch { /* Voice is optional. */ }
+}
+
 function setupVoices() {
   if (!("speechSynthesis" in window)) return;
   try {
@@ -407,6 +458,7 @@ function setupVoices() {
   } catch {
     voices = [];
   }
+  renderAudioSettings();
 }
 
 if ("speechSynthesis" in window) {
@@ -463,20 +515,37 @@ function speak(text) {
 
 function renderAudioSettings() {
   const sfxAvailable = audioSupported();
-  const voiceAvailable = "speechSynthesis" in window;
+  const voiceAvailable = "speechSynthesis" in window && Boolean(selectLocalizedVoice());
 
   if (!sfxAvailable) state.sfxEnabled = false;
-  if (!voiceAvailable) state.voiceEnabled = false;
 
   els.sfxToggle.disabled = !sfxAvailable;
   els.voiceToggle.disabled = !voiceAvailable;
 
   els.sfxToggle.classList.toggle("active", state.sfxEnabled);
-  els.voiceToggle.classList.toggle("active", state.voiceEnabled);
+  els.voiceToggle.classList.toggle("active", voiceAvailable && state.voiceEnabled);
   els.sfxToggle.setAttribute("aria-pressed", String(state.sfxEnabled));
-  els.voiceToggle.setAttribute("aria-pressed", String(state.voiceEnabled));
+  els.voiceToggle.setAttribute("aria-pressed", String(voiceAvailable && state.voiceEnabled));
   els.sfxToggle.title = sfxAvailable ? t("sfx") : t("sfxUnavailable");
   els.voiceToggle.title = voiceAvailable ? t("voice") : t("voiceUnavailable");
+}
+
+const effectTimers = new Set();
+function scheduleEffect(callback, delay) {
+  const timer = window.setTimeout(() => {
+    effectTimers.delete(timer);
+    callback();
+  }, delay);
+  effectTimers.add(timer);
+}
+
+function clearRoundEffects() {
+  effectTimers.forEach((timer) => window.clearTimeout(timer));
+  effectTimers.clear();
+  cancelSpeech();
+  els.confetti.replaceChildren();
+  els.goal.classList.remove("shake");
+  els.netRect?.classList.remove("ripple");
 }
 
 function throwConfetti() {
@@ -497,7 +566,7 @@ function throwConfetti() {
   }
 
   els.confetti.appendChild(fragment);
-  window.setTimeout(() => els.confetti.replaceChildren(), 1900);
+  scheduleEffect(() => els.confetti.replaceChildren(), 1900);
 }
 
 let toastTimer = null;
@@ -564,6 +633,7 @@ function resetKeyboard() {
   els.keyboard.querySelectorAll(".key").forEach((key) => {
     key.disabled = false;
     key.classList.remove("used", "good", "bad");
+    key.setAttribute("aria-label", key.dataset.key);
   });
 }
 
@@ -580,8 +650,20 @@ function markKey(rawCharacter, good) {
   els.keyboard.querySelectorAll(".key").forEach((key) => {
     if (normalizeLetter(key.dataset.key) !== normalized) return;
     key.classList.add("used", good ? "good" : "bad");
+    key.setAttribute("aria-label", `${key.dataset.key}: ${t(good ? "correctLetter" : "wrongLetter")}`);
     key.disabled = true;
   });
+}
+
+function teamHasLetter(letter) {
+  return state.current?.chars.some(
+    (character) => /\p{L}/u.test(character) && normalizeLetter(character) === letter
+  ) ?? false;
+}
+
+function restoreKeyboardState() {
+  resetKeyboard();
+  state.guessed.forEach((letter) => markKey(letter, teamHasLetter(letter)));
 }
 
 function updateGoalGraphics() {
@@ -608,7 +690,7 @@ function goalShake() {
   els.goal.classList.remove("shake");
   void els.goal.offsetWidth;
   els.goal.classList.add("shake");
-  window.setTimeout(() => els.goal.classList.remove("shake"), 320);
+  scheduleEffect(() => els.goal.classList.remove("shake"), 320);
 }
 
 function shuffle(items) {
@@ -658,6 +740,15 @@ function setupMasked() {
     character,
     shown: !/\p{L}/u.test(character)
   }));
+
+  state.guessed.forEach((letter) => {
+    state.masked.forEach((item) => {
+      if (/\p{L}/u.test(item.character) && normalizeLetter(item.character) === letter) {
+        item.shown = true;
+      }
+    });
+  });
+
   renderMasked();
 }
 
@@ -689,6 +780,7 @@ function renderMasked() {
     const isLetter = /\p{L}/u.test(item.character);
     tile.className = `letter-slot${item.shown ? " revealed" : ""}${isLetter ? "" : " punctuation"}`;
     tile.textContent = item.shown ? item.character : "";
+    tile.setAttribute("aria-hidden", "true");
     ensureCluster().appendChild(tile);
   });
 
@@ -766,6 +858,7 @@ function finishRound(status) {
   renderRoundControls();
   renderResult();
   savePersist();
+  els.nextGame.focus({ preventScroll: true });
 }
 
 function useHint() {
@@ -797,6 +890,7 @@ function useHint() {
   setBallAnim("tap");
 
   if (isSolved()) handleWin();
+  else savePersist();
 }
 
 function giveUp() {
@@ -829,6 +923,7 @@ function onGuess(rawCharacter) {
     setBallAnim("tap");
 
     if (isSolved()) handleWin();
+    else savePersist();
     return;
   }
 
@@ -849,6 +944,8 @@ function onGuess(rawCharacter) {
     say(t("gameOver", { team: state.current.nombre }));
     sfx.lose();
     finishRound(ROUND.LOST);
+  } else {
+    savePersist();
   }
 }
 
@@ -874,7 +971,68 @@ function handleWin() {
   finishRound(ROUND.WON);
 }
 
+function restoreSavedRound() {
+  const saved = state.savedRound;
+  state.savedRound = null;
+
+  if (
+    !saved ||
+    ![ROUND.PLAYING, ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(saved.status) ||
+    !Number.isInteger(saved.lives) ||
+    saved.lives < 0 ||
+    saved.lives > MAX_LIVES ||
+    !Array.isArray(saved.guessed) ||
+    saved.guessed.length > ALPHABET.length ||
+    saved.guessed.some((letter) => typeof letter !== "string" || !/^[A-ZÑ]$/.test(letter)) ||
+    new Set(saved.guessed).size !== saved.guessed.length ||
+    !Number.isSafeInteger(saved.roundStartScore) ||
+    saved.roundStartScore < 0 || saved.roundStartScore > state.score
+  ) {
+    return false;
+  }
+
+  const current = state.pool.find(
+    (item) => item.pais === saved.teamCountry && item.nombre === saved.team
+  );
+  if (!current) return false;
+  const letters = new Set(current.chars.filter((ch) => /\p{L}/u.test(ch)).map(normalizeLetter));
+  const solved = [...letters].every((letter) => saved.guessed.includes(letter));
+  const misses = saved.guessed.filter((letter) => !letters.has(letter)).length;
+  if (misses > MAX_LIVES - saved.lives ||
+      (saved.status === ROUND.PLAYING && (saved.lives === 0 || solved)) ||
+      (saved.status === ROUND.WON && (!solved || saved.lives === 0)) ||
+      ([ROUND.LOST, ROUND.GIVEN_UP].includes(saved.status) && (saved.lives !== 0 || solved))) {
+    return false;
+  }
+
+  state.current = current;
+  state.previousTeamName = current.nombre;
+  state.lives = saved.lives;
+  state.guessed = new Set(saved.guessed);
+  state.roundStartScore = saved.roundStartScore;
+  state.roundStatus = saved.status;
+
+  setupMasked();
+  restoreKeyboardState();
+  if (state.roundStatus !== ROUND.PLAYING) revealAll();
+  renderStats({ animate: false });
+  updateGoalGraphics();
+  setBallAnim("idle");
+  renderRoundControls();
+  if (state.roundStatus !== ROUND.PLAYING) renderResult();
+
+  els.countryBadge.textContent = countryLabel(state.current.pais);
+  if (state.roundStatus === ROUND.PLAYING) {
+    say(t("rival", { country: countryLabel(state.current.pais) }));
+  } else {
+    say(t(state.roundStatus === ROUND.WON ? "greatGoal" : "was", { team: current.nombre }));
+  }
+
+  return true;
+}
+
 function startRound() {
+  clearRoundEffects();
   if (!state.pool.length) {
     state.roundStatus = ROUND.ERROR;
     renderRoundControls();
@@ -882,6 +1040,7 @@ function startRound() {
     return;
   }
 
+  const moveFocus = els.resultPanel.contains(document.activeElement);
   state.roundStatus = ROUND.PLAYING;
   state.lives = MAX_LIVES;
   state.guessed.clear();
@@ -907,11 +1066,15 @@ function startRound() {
 
   els.countryBadge.textContent = countryLabel(state.current.pais);
   say(t("rival", { country: countryLabel(state.current.pais) }));
+  if (moveFocus) els.keyboard.querySelector(".key")?.focus({ preventScroll: true });
+  savePersist();
 }
 
 function abandonRoundForFilterChange() {
   if (state.roundStatus === ROUND.PLAYING) {
     state.streak = 0;
+    state.current = null;
+    state.guessed.clear();
     renderStats();
     savePersist();
   }
@@ -920,10 +1083,13 @@ function abandonRoundForFilterChange() {
 function onKeydown(event) {
   if (
     event.defaultPrevented ||
+    event.repeat ||
+    event.isComposing ||
     event.ctrlKey ||
     event.metaKey ||
     event.altKey ||
-    event.target?.closest?.("button, select, input, textarea, [contenteditable='true']")
+    event.target?.isContentEditable ||
+    event.target?.closest?.("select, input, textarea, [contenteditable]:not([contenteditable='false'])")
   ) {
     return;
   }
@@ -936,6 +1102,7 @@ function onKeydown(event) {
 
   if (
     event.key === "Enter" &&
+    !event.target?.closest?.("button, a, summary") &&
     [ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)
   ) {
     event.preventDefault();
@@ -967,11 +1134,13 @@ function validateTeamData(data) {
 
     const seenTeams = new Set();
     const teams = group.equipos.map((team, teamIndex) => {
-      const name = typeof team === "string" ? team.trim() : "";
-      if (!name || name.length < 2 || seenTeams.has(name)) {
+      const name = typeof team === "string" ? team.trim().normalize("NFC") : "";
+      if (!name || name.length < 2 || seenTeams.has(name.toLocaleUpperCase("es")) ||
+          ![...name].some((ch) => /\p{L}/u.test(ch)) ||
+          [...name].some((ch) => /\p{L}/u.test(ch) && !/^[A-ZÑ]$/.test(normalizeLetter(ch)))) {
         throw new TypeError(`Invalid or duplicated team at ${country}:${teamIndex}.`);
       }
-      seenTeams.add(name);
+      seenTeams.add(name.toLocaleUpperCase("es"));
       return name;
     });
 
@@ -990,7 +1159,7 @@ function loadData() {
     state.data = validateTeamData(window.AHORCABOL_TEAM_DATA);
     fillCountrySelect();
     rebuildPool();
-    startRound();
+    if (!restoreSavedRound()) startRound();
   } catch (error) {
     console.warn(t("dataWarning"), error);
     state.data = [];
@@ -1033,6 +1202,7 @@ function fillCountrySelect() {
 function applyLanguage(language, { persist = true } = {}) {
   if (!LANGUAGES.includes(language)) return;
 
+  cancelSpeech();
   state.language = language;
   document.documentElement.lang = I18N[language].htmlLang;
   document.title = t("title");
@@ -1058,7 +1228,6 @@ function applyLanguage(language, { persist = true } = {}) {
 
   if (state.data.length) {
     fillCountrySelect();
-    rebuildPool();
   }
 
   if (state.current) {
@@ -1068,10 +1237,14 @@ function applyLanguage(language, { persist = true } = {}) {
     }
     if ([ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)) {
       renderResult();
+      say(t(state.roundStatus === ROUND.WON ? "greatGoal" : "was", { team: state.current.nombre }));
     }
+    restoreKeyboardState();
+    renderRoundControls();
     renderMasked();
   }
 
+  if (state.roundStatus === ROUND.ERROR) say(t("dataWarning"));
   renderLives();
   renderAudioSettings();
 
@@ -1091,13 +1264,13 @@ function toggleSfx() {
 }
 
 function toggleVoice() {
-  if (!("speechSynthesis" in window)) {
+  if (!("speechSynthesis" in window) || !selectLocalizedVoice()) {
     say(t("voiceUnavailable"));
     return;
   }
 
   state.voiceEnabled = !state.voiceEnabled;
-  if (!state.voiceEnabled) window.speechSynthesis.cancel();
+  if (!state.voiceEnabled) cancelSpeech();
   renderAudioSettings();
   savePersist();
 }
@@ -1111,7 +1284,6 @@ function bindEvents() {
   els.country.addEventListener("change", () => {
     abandonRoundForFilterChange();
     state.country = els.country.value;
-    savePersist();
     rebuildPool();
     startRound();
   });
@@ -1121,7 +1293,7 @@ function bindEvents() {
   els.hint.addEventListener("click", useHint);
   els.giveUp.addEventListener("click", giveUp);
   els.nextGame.addEventListener("click", startRound);
-  els.retryData.addEventListener("click", loadData);
+  els.retryData.addEventListener("click", () => window.location.reload());
   window.addEventListener("keydown", onKeydown);
 }
 
@@ -1135,3 +1307,4 @@ function bindEvents() {
   renderAudioSettings();
   loadData();
 })();
+
