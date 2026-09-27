@@ -34,10 +34,10 @@
       <div class="utility-bar">
         <nav class="language-switcher segmented" aria-label="Idioma" id="languageSwitcher">
           <button class="segment active" type="button" data-lang="es-AR" aria-label="Español" title="Español" aria-pressed="true">
-            <span class="flag-emoji" aria-hidden="true">🇦🇷</span>
+            <img class="language-flag" src="assets/branding/argentina.svg" alt="" aria-hidden="true" width="27" height="18" />
           </button>
           <button class="segment" type="button" data-lang="en-US" aria-label="English" title="English" aria-pressed="false">
-            <span class="flag-emoji" aria-hidden="true">🇺🇸</span>
+            <img class="language-flag" src="assets/branding/usa.svg" alt="" aria-hidden="true" width="27" height="18" />
           </button>
           <button class="segment" type="button" data-lang="ca" aria-label="Català" title="Català" aria-pressed="false">
             <img class="language-flag" src="assets/branding/senyera.svg" alt="" aria-hidden="true" width="27" height="18" />
@@ -185,7 +185,7 @@
     </section>
 
     <section class="puzzle-card" aria-label="Equipo oculto" id="wordSection">
-      <div id="maskedWord" class="word-board" aria-live="polite" aria-label="Equipo oculto"></div>
+      <div id="maskedWord" class="word-board" role="img" aria-live="polite" aria-label="Equipo oculto"></div>
 
       <div id="playActions" class="action-row">
         <button id="hintBtn" class="btn secondary" type="button" data-i18n="hint">Pista (−1 vida)</button>
@@ -223,7 +223,15 @@
 
     <section class="keyboard" id="keyboard" aria-label="Teclado"></section>
 
+    <details class="help-panel">
+      <summary data-i18n="howToPlay">Cómo jugar</summary>
+      <p data-i18n="helpRules"></p>
+      <p data-i18n="helpPoints"></p>
+      <p data-i18n="helpSave"></p>
+    </details>
+
     <footer class="foot">
+      <small class="version">v1.7.0</small>
       <small data-i18n="footer">Ahorcabol — fútbol, letras y decisiones cuestionables.</small>
       <a href="https://santiagorodriguez.com/donate" data-i18n="donate">Donar</a>
     </footer>
@@ -233,3 +241,4 @@
   <script src="script.js" defer></script>
 </body>
 </html>
+

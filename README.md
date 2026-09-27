@@ -14,6 +14,14 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 
 **Play online:** https://santiagorodriguez.com/Ahorcabol/
 
+## What's new in 1.7.0
+
+- Resume an unfinished or completed round after reloading, including hints, lives and points.
+- Consistent local flag artwork and clearer correct/incorrect key states.
+- Physical keyboard input keeps working after clicking controls.
+- Expand **How to play** for the rules and scoring in your selected language.
+- Stronger saved-data validation and recovery from missing game files.
+
 ## The game
 
 - Pick one league or mix every club into the same bag.
@@ -21,7 +29,7 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 - Wins add points and keep your streak alive. Losing, giving up, or changing leagues mid-round does not.
 - Play with the on-screen keyboard or a physical one. `Ñ` gets its own key, as it should.
 - Sound effects and voice are optional.
-- The club pool is shuffled, so the same team should not immediately come back to haunt you.
+- The club pool is shuffled without repeats until exhausted during a session. Changing language keeps its order. Reloading rebuilds the pool but avoids an immediate repeat.
 
 ### Languages
 
@@ -41,6 +49,25 @@ Download the repository ZIP, extract it, and open `index.html` directly. That's 
 
 Everything needed to play is local. A static web server still works too, if you feel like making hangman slightly more official.
 
+## Development checks
+
+No installation or build step is needed to play. With Node.js 22 or later, run:
+
+```sh
+node --check script.js
+node --check teamlist.js
+node --test tests/*.test.cjs
+```
+
+The dependency-free tests execute the game runtime with a small DOM adapter.
+They cover scoring, hints, round outcomes, persistence recovery, keyboard input,
+localization, the shuffle bag and catalog playability. They do not replace
+browser checks for layout, focus behavior, speech/audio or screen readers.
+
+Before releasing, check narrow mobile and desktop layouts in a browser, all three
+languages, keyboard/touch input, reload recovery and direct `file://` play.
+Storage and speech availability depend on the browser; gameplay works without them.
+
 ## Screenshot
 
 <p align="center">
@@ -56,3 +83,4 @@ Everything needed to play is local. A static web server still works too, if you 
 ## License
 
 GPLv3. See [`LICENSE`](LICENSE).
+
