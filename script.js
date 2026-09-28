@@ -86,7 +86,7 @@ const I18N = {
     music: "Música",
     musicPending: "Preparando música…",
     musicUnavailable: "La música no está disponible en este navegador.",
-    musicPaused: "Música pausada. Jugá o desactivá y activá Música para escucharla.",
+    musicPaused: "Música lista. Tocá Música o jugá para escucharla.",
     speechGoal: "¡Gooooool!",
     speechOut: "¡Fuera!",
     speechWin: "¡Golazo!",
@@ -161,7 +161,7 @@ const I18N = {
     music: "Music",
     musicPending: "Preparing music…",
     musicUnavailable: "Music is not available in this browser.",
-    musicPaused: "Music paused. Play or turn Music off and on to listen.",
+    musicPaused: "Music ready. Select Music or play to listen.",
     speechGoal: "Goal!",
     speechOut: "Wide!",
     speechWin: "What a goal!",
@@ -236,7 +236,7 @@ const I18N = {
     music: "Música",
     musicPending: "Preparant música…",
     musicUnavailable: "La música no està disponible en aquest navegador.",
-    musicPaused: "Música en pausa. Juga o desactiva i activa Música per escoltar-la.",
+    musicPaused: "Música a punt. Prem Música o juga per escoltar-la.",
     speechGoal: "Gol!",
     speechOut: "Fora!",
     speechWin: "Golàs!",
@@ -548,7 +548,8 @@ function renderAudioSettings() {
   const musicStatus = gameAudio.getMusicStatus();
   els.musicToggle.disabled = !gameAudio.musicSupported || musicStatus === "error";
   els.musicToggle.setAttribute("aria-pressed", String(state.musicEnabled));
-  els.musicToggle.classList.toggle("active", state.musicEnabled && musicStatus === "playing");
+  els.musicToggle.classList.toggle("active", state.musicEnabled && !els.musicToggle.disabled);
+  els.musicToggle.setAttribute("aria-busy", String(musicStatus === "pending" && state.musicEnabled));
   const musicMessage = !gameAudio.musicSupported || musicStatus === "error" ? t("musicUnavailable")
     : !state.musicEnabled ? "" : musicStatus === "pending" ? t("musicPending")
     : musicStatus !== "playing" ? t("musicPaused") : "";
@@ -1303,7 +1304,9 @@ function toggleSfx() {
 
 function toggleMusic() {
   if (!gameAudio.musicSupported || gameAudio.getMusicStatus() === "error") return;
-  state.musicEnabled = !state.musicEnabled;
+  const waiting = ["idle", "blocked"].includes(gameAudio.getMusicStatus());
+  // The first click starts a saved/default-on channel awaiting a gesture.
+  state.musicEnabled = waiting || !state.musicEnabled;
   gameAudio.setMusicEnabled(state.musicEnabled);
   if (state.musicEnabled) gameAudio.activate();
   renderAudioSettings();

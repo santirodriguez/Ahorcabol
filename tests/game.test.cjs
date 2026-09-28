@@ -408,6 +408,7 @@ test('music preferences migrate independently, default on and never activate at 
     audio.setMusicEnabled = value => loaded.push(value);
     let activations = 0;
     audio.activate = () => activations++;
+    audio.getMusicStatus = () => preference !== false ? 'playing' : 'idle';
     const g = game({ data: clubs, audioController: audio, saved: snapshot({}, { musicEnabled: preference, sfxEnabled: false, voiceEnabled: true }) });
     assert.equal(g.state.musicEnabled, preference !== false);
     assert.deepEqual(loaded, [preference !== false]);
@@ -445,7 +446,7 @@ test('music settings survive blocked storage and next-round gesture can unlock s
   let activations = 0;
   audio.activate = () => activations++;
   const g = game({ audioController: audio, storageBlocked: true });
-  g.run('toggleMusic(); toggleMusic()');
+  g.run('toggleMusic()');
   assert.equal(g.state.musicEnabled, true);
   g.run('els.nextGame').listeners.click();
   assert.equal(activations, 2);
@@ -476,4 +477,44 @@ test('action feedback names guesses and hints but keeps terminal outcome dominan
   const remaining = g.state.masked.find(item => !item.shown).character;
   g.run(`onGuess('${remaining}')`);
   assert.equal(g.elements.get('toast').textContent, g.run('t("greatGoal")'));
+});
+
+test('first Music click starts default-on or saved-on playback without switching it off', () => {
+  for (const saved of [null, JSON.stringify({ musicEnabled: true }), JSON.stringify({ musicEnabled: false })]) {
+    const audio = audioSpy();
+    let status = 'idle';
+    let activations = 0;
+    const enabled = [];
+    audio.getMusicStatus = () => status;
+    audio.setMusicEnabled = value => enabled.push(value);
+    audio.activate = () => { activations++; status = 'pending'; };
+    const g = game({ audioController: audio, saved });
+    assert.equal(activations, 0);
+    assert.equal(g.elements.get('musicToggle').classList.contains('active'), saved === null || JSON.parse(saved).musicEnabled);
+    g.elements.get('musicToggle').listeners.click();
+    assert.equal(activations, 1);
+    assert.equal(g.state.musicEnabled, true);
+    assert.equal(enabled.at(-1), true);
+    assert.equal(g.elements.get('musicToggle').attributes['aria-busy'], 'true');
+    status = 'playing'; audio.onStatusChange();
+    g.elements.get('musicToggle').listeners.click();
+    assert.equal(g.state.musicEnabled, false);
+    assert.equal(activations, 1);
+    assert.equal(JSON.parse(g.persisted()).musicEnabled, false);
+  }
+});
+
+test('Music click retries blocked playback and a pending render can be cancelled', () => {
+  const audio = audioSpy();
+  let status = 'blocked';
+  let activations = 0;
+  audio.getMusicStatus = () => status;
+  audio.activate = () => { activations++; status = 'pending'; };
+  const g = game({ audioController: audio });
+  g.run('toggleMusic()');
+  assert.equal(activations, 1);
+  assert.equal(g.state.musicEnabled, true);
+  g.run('toggleMusic()');
+  assert.equal(g.state.musicEnabled, false);
+  assert.equal(g.elements.get('musicToggle').attributes['aria-busy'], 'false');
 });

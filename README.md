@@ -81,8 +81,10 @@ requires another play action to resume sound. A blocked audio backend never
 prevents gameplay or erases the saved sound preference. Voice remains independent.
 Music defaults on when no valid preference exists; an explicit saved off choice
 is preserved. It has its own toggle, separate from SFX and voice. Its
-saved preference never autoplays on reload: use a play action or toggle Music
-back on. On first use, OfflineAudioContext renders one mono 32 kHz buffer
+saved preference never autoplays on reload: play or select Music once to start.
+While playing or preparing, selecting Music turns it off; a paused channel can
+be resumed with one click. The highlighted toggle reflects the saved choice,
+and its status explains when playback is waiting or preparing. On first use, OfflineAudioContext renders one mono 32 kHz buffer
 (about 17 seconds / 2.1 MiB), reused across rounds without downloading audio.
 Music stays quiet and ducks during speech and terminal effects. Hiding the page
 stops playback until another play action. Unsupported/failed music leaves the
