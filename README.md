@@ -14,13 +14,15 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 
 **Play online:** https://santiagorodriguez.com/Ahorcabol/
 
-## What's new in 1.7.0
+## What's new in 1.8.0 (candidate)
 
-- Resume an unfinished or completed round after reloading, including hints, lives and points.
-- Consistent local flag artwork and clearer correct/incorrect key states.
-- Physical keyboard input keeps working after clicking controls.
-- Expand **How to play** for the rules and scoring in your selected language.
-- Stronger saved-data validation and recovery from missing game files.
+- Original synthesized effects and lightweight background music with separate controls.
+- Music enabled by default; saved choices are respected and playback waits for interaction.
+- Reliable audio cancellation when muted or hidden, with quieter music during voice feedback.
+- Letter-specific feedback, explicit hidden-letter labels and calmer decorative motion.
+- Smaller runtime branding assets and dependency-free local checks.
+
+This branch prepares v1.8.0; it has not been published as a release.
 
 ## The game
 
@@ -28,7 +30,7 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 - You get six lives. Wrong letters spend them; hints are not exactly charity either.
 - Wins add points and keep your streak alive. Losing, giving up, or changing leagues mid-round does not.
 - Play with the on-screen keyboard or a physical one. `Ñ` gets its own key, as it should.
-- Sound effects and voice are optional.
+- Sound effects, music and voice have independent controls.
 - The club pool is shuffled without repeats until exhausted during a session. Changing language keeps its order. Reloading rebuilds the pool but avoids an immediate repeat.
 
 ### Languages
@@ -51,15 +53,18 @@ Everything needed to play is local. A static web server still works too, if you 
 
 ## Development checks
 
-No installation or build step is needed to play. With Node.js 22 or later, run:
+No installation or build step is needed to play. With Node.js 22 or later, run
+the checks locally:
 
 ```sh
+node --check audio.js
 node --check script.js
 node --check teamlist.js
 node --test tests/*.test.cjs
 ```
 
-The dependency-free tests execute the game runtime with a small DOM adapter.
+The dependency-free tests execute the game runtime with a small DOM adapter
+and exercise the audio controller with a fake audio clock/backend.
 They cover scoring, hints, round outcomes, persistence recovery, keyboard input,
 localization, the shuffle bag and catalog playability. They do not replace
 browser checks for layout, focus behavior, speech/audio or screen readers.
@@ -68,10 +73,30 @@ Before releasing, check narrow mobile and desktop layouts in a browser, all thre
 languages, keyboard/touch input, reload recovery and direct `file://` play.
 Storage and speech availability depend on the browser; gameplay works without them.
 
+Effects and an original eight-bar background loop are synthesized locally in
+the optional classic script `audio.js`, under the project license.
+Audio starts only after a play action or explicit audio activation. Muting, starting
+another round, or hiding the page cancels pending effects. Returning to the page
+requires another play action to resume sound. A blocked audio backend never
+prevents gameplay or erases the saved sound preference. Voice remains independent.
+Music defaults on when no valid preference exists; an explicit saved off choice
+is preserved. It has its own toggle, separate from SFX and voice. Its
+saved preference never autoplays on reload: play or select Music once to start.
+While playing or preparing, selecting Music turns it off; a paused channel can
+be resumed with one click. The highlighted toggle reflects the saved choice,
+and its status explains when playback is waiting or preparing. On first use, OfflineAudioContext renders one mono 32 kHz buffer
+(about 17 seconds / 2.1 MiB), reused across rounds without downloading audio.
+Music stays quiet and ducks during speech and terminal effects. Hiding the page
+stops playback until another play action. Unsupported/failed music leaves the
+other channels and game usable.
+Audio tests cover scheduling and cancellation, not perceived sound quality;
+audition cues and at least three music loops with voice, verify interruption/
+recovery, and measure first-use latency on a phone before releasing.
+
 ## Screenshot
 
 <p align="center">
-  <img src="assets/screenshots/screenshot-v1.6.png" alt="Ahorcabol 1.6" width="90%" />
+  <img src="assets/screenshots/screenshot-v1.8.0.png" alt="Ahorcabol 1.8.0 — completed round with music enabled" width="90%" />
 </p>
 
 ## Author
