@@ -93,12 +93,10 @@ Audio tests cover scheduling and cancellation, not perceived sound quality;
 audition cues and at least three music loops with voice, verify interruption/
 recovery, and measure first-use latency on a phone before releasing.
 
-## Historical screenshot (v1.6)
-
-A current v1.8.0 capture is pending browser validation.
+## Screenshot
 
 <p align="center">
-  <img src="assets/screenshots/screenshot-v1.6.png" alt="Ahorcabol 1.6" width="90%" />
+  <img src="assets/screenshots/screenshot-v1.8.0.png" alt="Ahorcabol 1.8.0 — completed round with music enabled" width="90%" />
 </p>
 
 ## Author
