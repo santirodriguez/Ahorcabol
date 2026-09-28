@@ -419,8 +419,8 @@ select option {
 .crossbar { fill: url(#postGlow); filter: drop-shadow(0 0 4px rgba(108, 194, 255, 0.4)); }
 .net-frame { fill: rgba(209, 235, 252, 0.025); stroke: rgba(207, 232, 249, 0.22); stroke-width: 1.1; }
 .net-lines line { stroke: rgba(201, 227, 245, 0.23); stroke-width: 0.8; }
-.net-rect { fill: transparent; transform-origin: 50% 10%; }
-.net-rect.ripple { animation: net-ripple 0.62s ease; }
+.net { transform-box: fill-box; transform-origin: 50% 10%; }
+.net.ripple { animation: net-ripple 0.62s ease; }
 @keyframes net-ripple { 36% { transform: skewY(-4deg) scaleY(1.03); } }
 .rope { stroke: #dec39b; stroke-width: 2.1; }
 .hang-part { opacity: 0; transition: opacity 0.2s ease; }
@@ -434,7 +434,7 @@ select option {
 .ball-core { fill: url(#ballShine); stroke: #082645; stroke-width: 1.2; }
 .ball-cell { fill: #082645; stroke: #082645; stroke-width: 0.8; }
 .ball-seam { fill: none; stroke: #082645; stroke-width: 1; }
-.ball-svg.idle { animation: rock 2.8s ease-in-out infinite; }
+.ball-svg.idle { animation: rock 2.8s ease-in-out 1; }
 @keyframes rock { 50% { transform: translate(5px, -4px) rotate(-8deg); } }
 .ball-svg.tap { animation: tap 0.22s ease-out; }
 @keyframes tap { to { transform: translate(13px, -10px) rotate(18deg); } }
@@ -578,6 +578,7 @@ select option {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .net.ripple { animation: none; }
   *,
   *::before,
   *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

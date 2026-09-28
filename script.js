@@ -56,7 +56,9 @@ const I18N = {
     noTeams: "No hay equipos disponibles con este filtro.",
     noMoreHints: "Con una sola vida ya no hay margen para otra pista.",
     alreadyRevealed: "Ya está todo revelado.",
-    hintMessage: "Pista servida. Costó una vida.",
+    hintMessage: "Pista: {letter}. Costó una vida.",
+    hiddenLetter: "letra oculta",
+    wordBreak: "espacio",
     goal: "¡Gol! Esa letra estaba.",
     out: "Al palo. Esa letra no está.",
     gameOver: "Se terminó. Era {team}.",
@@ -129,7 +131,9 @@ const I18N = {
     noTeams: "No teams are available with this filter.",
     noMoreHints: "With one life left there is no room for another hint.",
     alreadyRevealed: "Everything is already revealed.",
-    hintMessage: "Hint delivered. It cost one life.",
+    hintMessage: "Hint: {letter}. It cost one life.",
+    hiddenLetter: "hidden letter",
+    wordBreak: "space",
     goal: "Goal. That letter is in.",
     out: "Off the post. That letter is out.",
     gameOver: "That's it. It was {team}.",
@@ -202,7 +206,9 @@ const I18N = {
     noTeams: "No hi ha equips disponibles amb aquest filtre.",
     noMoreHints: "Amb una sola vida ja no hi ha marge per a una altra pista.",
     alreadyRevealed: "Ja està tot revelat.",
-    hintMessage: "Pista servida. Ha costat una vida.",
+    hintMessage: "Pista: {letter}. Ha costat una vida.",
+    hiddenLetter: "lletra oculta",
+    wordBreak: "espai",
     goal: "Gol. Aquesta lletra hi és.",
     out: "Al pal. Aquesta lletra no hi és.",
     gameOver: "S'ha acabat. Era {team}.",
@@ -287,7 +293,7 @@ const state = {
   language: DEFAULT_LANGUAGE,
   country: "ALL",
   sfxEnabled: true,
-  musicEnabled: false,
+  musicEnabled: true,
   voiceEnabled: false,
   roundStatus: ROUND.LOADING,
   savedRound: null
@@ -332,7 +338,7 @@ const els = {
   resultStreak: document.getElementById("resultStreak"),
   dataErrorPanel: document.getElementById("dataErrorPanel"),
   ball: document.getElementById("ball"),
-  netRect: document.querySelector(".net-rect")
+  net: document.querySelector(".net")
 };
 
 const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -567,7 +573,7 @@ function clearRoundEffects() {
   cancelSpeech();
   els.confetti.replaceChildren();
   els.goal.classList.remove("shake");
-  els.netRect?.classList.remove("ripple");
+  els.net?.classList.remove("ripple");
 }
 
 function throwConfetti() {
@@ -807,8 +813,9 @@ function renderMasked() {
   });
 
   const accessibleWord = state.masked
-    .map((item) => (item.shown ? item.character : "_"))
-    .join("");
+    .map((item) => /\s/u.test(item.character) ? t("wordBreak")
+      : item.shown ? item.character : t("hiddenLetter"))
+    .join(", ");
   els.masked.setAttribute("aria-label", `${t("hiddenTeam")}: ${accessibleWord}`);
 }
 
@@ -907,7 +914,7 @@ function useHint() {
   renderStats();
   updateGoalGraphics();
   renderRoundControls();
-  say(t("hintMessage"));
+  say(t("hintMessage", { letter: normalized }));
   setBallAnim("tap");
 
   if (isSolved()) handleWin();
@@ -942,7 +949,7 @@ function onGuess(rawCharacter) {
     markKey(rawCharacter, true);
     state.score += 100 * hits;
     renderStats();
-    say(t("goal"));
+    say(`${character}: ${t("correctLetter")}. ${t("goal")}`);
     setBallAnim("tap");
 
     if (isSolved()) handleWin();
@@ -959,7 +966,7 @@ function onGuess(rawCharacter) {
   renderStats();
   updateGoalGraphics();
   renderRoundControls();
-  say(t("out"));
+  say(`${character}: ${t("wrongLetter")}. ${t("out")}`);
   goalShake();
   setBallAnim("post");
 
@@ -990,10 +997,10 @@ function handleWin() {
   throwConfetti();
   setBallAnim("kick");
 
-  if (els.netRect) {
-    els.netRect.classList.remove("ripple");
-    void els.netRect.offsetWidth;
-    els.netRect.classList.add("ripple");
+  if (els.net) {
+    els.net.classList.remove("ripple");
+    void els.net.offsetWidth;
+    els.net.classList.add("ripple");
   }
 
   finishRound(ROUND.WON);

@@ -11,8 +11,8 @@
     content="Ahorcabol es un ahorcado futbolero para adivinar clubes antes de quedarte sin vidas."
   />
   <title>Ahorcabol — Ahorcado futbolero</title>
-  <link rel="icon" type="image/png" href="assets/branding/ahorcabol-icon.png" />
-  <link rel="apple-touch-icon" href="assets/branding/ahorcabol-icon.png" />
+  <link rel="icon" type="image/png" href="assets/branding/favicon-48.png" sizes="48x48" />
+  <link rel="apple-touch-icon" href="assets/branding/touch-icon-180.png" sizes="180x180" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -22,10 +22,10 @@
     <header class="topbar">
       <picture class="brand-picture">
         <source media="(max-width: 520px)" srcset="assets/branding/ahorcabol-head-small.png" />
-        <source media="(max-width: 900px)" srcset="assets/branding/ahorcabol-head-medium.png" />
         <img
           class="brand-logo"
-          src="assets/branding/ahorcabol-head.png"
+          src="assets/branding/ahorcabol-head-medium.png"
+          width="1086" height="362"
           alt="Ahorcabol"
           decoding="async"
         />
@@ -49,7 +49,7 @@
             <span class="toggle-dot" aria-hidden="true"></span>
             <span data-i18n="sfx">SFX</span>
           </button>
-          <button id="musicToggle" aria-describedby="musicStatus" class="chip-toggle" type="button" aria-pressed="false">
+          <button id="musicToggle" aria-describedby="musicStatus" class="chip-toggle" type="button" aria-pressed="true">
             <span class="toggle-dot" aria-hidden="true"></span>
             <span data-i18n="music">Música</span>
           </button>
@@ -97,7 +97,7 @@
           <strong id="countryBadge" class="country-badge">—</strong>
         </div>
 
-        <div class="lives" id="livesWrap" aria-live="polite">
+        <div class="lives" id="livesWrap">
           <span id="livesLabel" class="lives-label">6 vidas</span>
           <div id="lifePips" class="life-pips" aria-hidden="true">
             <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -153,7 +153,6 @@
                 <line x1="52" y1="120" x2="308" y2="120" />
                 <line x1="52" y1="144" x2="308" y2="144" />
               </g>
-              <rect x="52" y="50" width="256" height="128" class="net-rect"></rect>
             </g>
           </g>
 
@@ -191,7 +190,7 @@
     </section>
 
     <section class="puzzle-card" aria-label="Equipo oculto" id="wordSection">
-      <div id="maskedWord" class="word-board" role="img" aria-live="polite" aria-label="Equipo oculto"></div>
+      <div id="maskedWord" class="word-board" role="img" aria-label="Equipo oculto"></div>
 
       <div id="playActions" class="action-row">
         <button id="hintBtn" class="btn secondary" type="button" data-i18n="hint">Pista (−1 vida)</button>
@@ -237,7 +236,7 @@
     </details>
 
     <footer class="foot">
-      <small class="version">v1.7.0</small>
+      <small class="version">v1.8.0</small>
       <small data-i18n="footer">Ahorcabol — fútbol, letras y decisiones cuestionables.</small>
       <a href="https://santiagorodriguez.com/donate" data-i18n="donate">Donar</a>
     </footer>

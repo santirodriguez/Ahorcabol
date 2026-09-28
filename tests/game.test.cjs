@@ -401,7 +401,7 @@ test('superseded speech callbacks cannot change the new utterance or survive giv
   assert.deepEqual(audio.calls, ['speech:true', 'speech:false', 'lose']);
 });
 
-test('music preferences migrate independently, default off and never activate at load', () => {
+test('music preferences migrate independently, default on and never activate at load', () => {
   for (const preference of [undefined, null, 'true', 1, false, true]) {
     const audio = audioSpy();
     const loaded = [];
@@ -409,17 +409,17 @@ test('music preferences migrate independently, default off and never activate at
     let activations = 0;
     audio.activate = () => activations++;
     const g = game({ data: clubs, audioController: audio, saved: snapshot({}, { musicEnabled: preference, sfxEnabled: false, voiceEnabled: true }) });
-    assert.equal(g.state.musicEnabled, preference === true);
-    assert.deepEqual(loaded, [preference === true]);
+    assert.equal(g.state.musicEnabled, preference !== false);
+    assert.deepEqual(loaded, [preference !== false]);
     assert.equal(activations, 0);
     assert.equal(g.state.sfxEnabled, false);
     assert.equal(g.state.voiceEnabled, true);
     assert.equal(g.state.current.nombre, 'Boca');
     g.run('toggleMusic()');
-    assert.equal(JSON.parse(g.persisted()).musicEnabled, preference !== true);
+    assert.equal(JSON.parse(g.persisted()).musicEnabled, preference === false);
     assert.equal(g.state.sfxEnabled, false);
     assert.equal(g.state.voiceEnabled, true);
-    assert.equal(activations, preference === true ? 0 : 1);
+    assert.equal(activations, preference !== false ? 0 : 1);
   }
 });
 
@@ -445,7 +445,7 @@ test('music settings survive blocked storage and next-round gesture can unlock s
   let activations = 0;
   audio.activate = () => activations++;
   const g = game({ audioController: audio, storageBlocked: true });
-  g.run('toggleMusic()');
+  g.run('toggleMusic(); toggleMusic()');
   assert.equal(g.state.musicEnabled, true);
   g.run('els.nextGame').listeners.click();
   assert.equal(activations, 2);
@@ -453,4 +453,27 @@ test('music settings survive blocked storage and next-round gesture can unlock s
   g.run('applyLanguage("ca")');
   assert.equal(activations, 2);
   assert.equal(g.state.musicEnabled, true);
+});
+
+test('masked accessibility spells out hidden letters and spaces without leaking answers', () => {
+  const g = game({ data: single('AB CD') });
+  assert.equal(g.elements.get('maskedWord').attributes['aria-label'], 'Equipo oculto: letra oculta, letra oculta, espacio, letra oculta, letra oculta');
+  g.run("onGuess('A')");
+  assert.match(g.elements.get('maskedWord').attributes['aria-label'], /A, letra oculta, espacio/);
+  assert.doesNotMatch(g.elements.get('maskedWord').attributes['aria-label'], /B|C|D/);
+  g.run('applyLanguage("en-US")');
+  assert.match(g.elements.get('maskedWord').attributes['aria-label'], /A, hidden letter, space/);
+  g.run('applyLanguage("ca")');
+  assert.match(g.elements.get('maskedWord').attributes['aria-label'], /A, lletra oculta, espai/);
+});
+
+test('action feedback names guesses and hints but keeps terminal outcome dominant', () => {
+  const g = game({ data: single('AB') });
+  g.run("onGuess('Z')");
+  assert.match(g.elements.get('toast').textContent, /Z: Incorrecta/);
+  g.run('useHint()');
+  assert.match(g.elements.get('toast').textContent, /Pista: [AB]. Costó una vida/);
+  const remaining = g.state.masked.find(item => !item.shown).character;
+  g.run(`onGuess('${remaining}')`);
+  assert.equal(g.elements.get('toast').textContent, g.run('t("greatGoal")'));
 });
