@@ -20,7 +20,7 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 - Music enabled by default; saved choices are respected and playback waits for interaction.
 - Reliable audio cancellation when muted or hidden, with quieter music during voice feedback.
 - Letter-specific feedback, explicit hidden-letter labels and calmer decorative motion.
-- Smaller runtime branding assets and dependency-free automated checks.
+- Smaller runtime branding assets and dependency-free local checks.
 
 This branch prepares v1.8.0; it has not been published as a release.
 
@@ -53,8 +53,8 @@ Everything needed to play is local. A static web server still works too, if you 
 
 ## Development checks
 
-No installation or build step is needed to play. GitHub Actions runs these same
-checks on Node.js 22 for pushes and pull requests. Locally, with Node.js 22 or later, run:
+No installation or build step is needed to play. With Node.js 22 or later, run
+the checks locally:
 
 ```sh
 node --check audio.js
