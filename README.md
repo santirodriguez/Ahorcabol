@@ -54,12 +54,14 @@ Everything needed to play is local. A static web server still works too, if you 
 No installation or build step is needed to play. With Node.js 22 or later, run:
 
 ```sh
+node --check audio.js
 node --check script.js
 node --check teamlist.js
 node --test tests/*.test.cjs
 ```
 
-The dependency-free tests execute the game runtime with a small DOM adapter.
+The dependency-free tests execute the game runtime with a small DOM adapter
+and exercise the audio controller with a fake audio clock/backend.
 They cover scoring, hints, round outcomes, persistence recovery, keyboard input,
 localization, the shuffle bag and catalog playability. They do not replace
 browser checks for layout, focus behavior, speech/audio or screen readers.
@@ -67,6 +69,14 @@ browser checks for layout, focus behavior, speech/audio or screen readers.
 Before releasing, check narrow mobile and desktop layouts in a browser, all three
 languages, keyboard/touch input, reload recovery and direct `file://` play.
 Storage and speech availability depend on the browser; gameplay works without them.
+
+Effects are synthesized locally in the optional classic script `audio.js`.
+Audio starts only after a play action or explicit SFX activation. Muting, starting
+another round, or hiding the page cancels pending effects. Returning to the page
+requires another play action to resume sound. A blocked audio backend never
+prevents gameplay or erases the saved sound preference. Voice remains independent.
+Audio tests cover scheduling and cancellation, not perceived sound quality;
+audition cues and verify interruption/recovery in a browser before releasing.
 
 ## Screenshot
 

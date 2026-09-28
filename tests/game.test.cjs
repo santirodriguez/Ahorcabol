@@ -9,13 +9,14 @@ const root = path.join(__dirname, '..');
 
 // A minimal DOM boundary lets Node exercise the real runtime without a build
 // step or third-party dependencies. It does not validate browser layout.
-function game({ saved = null, data, storageBlocked = false } = {}) {
+function game({ saved = null, data, storageBlocked = false, audioController, missingAudio = false, speech } = {}) {
   const elements = new Map();
   const timers = new Map();
   let timerId = 0;
   let persisted = saved;
   let reloads = 0;
-  const document = { documentElement: {}, activeElement: null, title: '' };
+  const document = { documentElement: {}, activeElement: null, title: '', hidden: false, listeners: {},
+    addEventListener(name, callback) { this.listeners[name] = callback; } };
   class Element {
     constructor(tag = 'div') {
       this.tag = tag;
@@ -62,19 +63,23 @@ function game({ saved = null, data, storageBlocked = false } = {}) {
     matchMedia: () => ({ matches: true }),
     setTimeout: callback => { const id = ++timerId; timers.set(id, callback); return id; },
     clearTimeout: id => timers.delete(id),
-    addEventListener() {},
+    listeners: {},
+    addEventListener(name, callback) { this.listeners[name] = callback; },
     location: { reload() { reloads++; } }
   };
-  const context = vm.createContext({ window, document, console: { warn() {} }, localStorage: {
+  if (speech) window.speechSynthesis = speech;
+  const context = vm.createContext({ window, document, SpeechSynthesisUtterance: function(text) { this.text = text; }, console: { warn() {} }, localStorage: {
     getItem() { if (storageBlocked) throw Error('blocked'); return persisted; },
     setItem(_key, value) { if (storageBlocked) throw Error('blocked'); persisted = value; }
   } });
   vm.runInContext(fs.readFileSync(path.join(root, 'teamlist.js'), 'utf8'), context);
   if (data !== undefined) window.AHORCABOL_TEAM_DATA = data;
+  if (!missingAudio) vm.runInContext(fs.readFileSync(path.join(root, 'audio.js'), 'utf8'), context);
+  if (audioController) window.AHORCABOL_AUDIO = audioController;
   vm.runInContext(fs.readFileSync(path.join(root, 'script.js'), 'utf8'), context);
   const run = code => vm.runInContext(code, context);
   const state = run('state');
-  return { run, state, elements, document, timers, persisted: () => persisted, reloads: () => reloads };
+  return { run, state, elements, document, window, timers, persisted: () => persisted, reloads: () => reloads };
 }
 const clubs = [{ pais: 'Argentina', equipos: ['Boca', 'River', 'Vélez'] }];
 const single = name => [{ pais: 'Argentina', equipos: [name] }];
@@ -300,4 +305,98 @@ test('local language flags keep the selected countries and contain complete artw
   assert.match(usa, /viewBox="0 0 190 100"/);
   const argentina = fs.readFileSync(path.join(root, 'assets/branding/argentina.svg'), 'utf8');
   assert.equal((argentina.match(/<polygon /g) || []).length, 32);
+});
+
+function audioSpy() {
+  const calls = [];
+  return { calls, supported: true, status: 'idle', getStatus() { return this.status; },
+    play(kind) { calls.push(kind); }, clear() { calls.push('clear'); },
+    setEnabled(value) { calls.push(`enabled:${value}`); },
+    setPaused(value) { calls.push(`paused:${value}`); },
+    setSpeechActive(value) { calls.push(`speech:${value}`); } };
+}
+
+test('guesses play one semantic cue and terminal guesses never double up', () => {
+  const audio = audioSpy();
+  const g = game({ data: single('AB'), audioController: audio });
+  audio.calls.length = 0;
+  g.run("onGuess('A'); onGuess('A'); onGuess('Z'); onGuess('B')");
+  assert.deepEqual(audio.calls.filter(c => !c.startsWith('speech:')), ['correct', 'incorrect', 'win']);
+  assert.equal(g.state.score, 950);
+  const losing = game({ data: single('AB'), audioController: audio });
+  audio.calls.length = 0;
+  losing.run("state.lives = 1; onGuess('Z')");
+  assert.deepEqual(audio.calls, ['speech:false', 'lose']);
+  assert.equal(losing.state.roundStatus, 'lost');
+});
+
+test('hints have their own cue and a solving hint plays only the win cue', () => {
+  const audio = audioSpy();
+  const g = game({ data: single('AB'), audioController: audio });
+  audio.calls.length = 0;
+  g.run('useHint(); useHint()');
+  assert.deepEqual(audio.calls, ['hint', 'win']);
+  assert.equal(g.state.lives, 4);
+  assert.equal(g.state.score, 700);
+});
+
+test('missing optional audio preserves intent and leaves the game playable', () => {
+  const g = game({ data: single('AA'), missingAudio: true, saved: JSON.stringify({ sfxEnabled: true }) });
+  assert.equal(g.state.sfxEnabled, true);
+  assert.equal(g.elements.get('sfxToggle').disabled, true);
+  g.run("onGuess('A')");
+  assert.equal(g.state.roundStatus, 'won');
+  assert.equal(JSON.parse(g.persisted()).sfxEnabled, true);
+});
+
+test('blocked audio is visible without discarding the saved preference', () => {
+  const audio = audioSpy();
+  const g = game({ audioController: audio });
+  audio.status = 'blocked';
+  audio.onStatusChange();
+  assert.equal(g.elements.get('audioStatus').hidden, false);
+  assert.equal(g.elements.get('sfxToggle').classList.contains('active'), false);
+  assert.equal(g.elements.get('sfxToggle').attributes['aria-pressed'], 'true');
+  assert.equal(g.state.sfxEnabled, true);
+  audio.status = 'ready';
+  audio.onStatusChange();
+  assert.equal(g.elements.get('audioStatus').hidden, true);
+  assert.equal(g.elements.get('sfxToggle').classList.contains('active'), true);
+});
+
+test('lifecycle cancels speech and pauses audio without replay on return', () => {
+  const audio = audioSpy();
+  let cancellations = 0;
+  const g = game({ audioController: audio, speech: { getVoices: () => [], cancel() { cancellations++; } } });
+  audio.calls.length = 0;
+  cancellations = 0;
+  g.document.hidden = true;
+  g.document.listeners.visibilitychange();
+  g.window.listeners.pagehide();
+  g.document.hidden = false;
+  g.window.listeners.pageshow();
+  g.document.listeners.visibilitychange();
+  assert.deepEqual(audio.calls, ['paused:true', 'speech:false', 'paused:true', 'speech:false', 'paused:false', 'paused:false']);
+  assert.equal(cancellations, 2);
+  audio.calls.length = 0;
+  g.run('startRound()');
+  assert.ok(audio.calls.includes('clear'));
+  assert.ok(!audio.calls.includes('correct'));
+});
+
+test('superseded speech callbacks cannot change the new utterance or survive give-up', () => {
+  const audio = audioSpy();
+  const utterances = [];
+  const g = game({ data: single('ABC'), audioController: audio, saved: JSON.stringify({ voiceEnabled: true }),
+    speech: { getVoices: () => [{ lang: 'es-AR', localService: true }], cancel() {}, speak(u) { utterances.push(u); } } });
+  g.run("onGuess('A'); onGuess('B')");
+  assert.equal(utterances.length, 2);
+  audio.calls.length = 0;
+  utterances[1].onstart();
+  utterances[0].onend();
+  assert.deepEqual(audio.calls, ['speech:true']);
+  g.run('giveUp()');
+  utterances[1].onstart();
+  utterances[1].onend();
+  assert.deepEqual(audio.calls, ['speech:true', 'speech:false', 'lose']);
 });

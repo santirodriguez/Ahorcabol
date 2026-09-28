@@ -45,7 +45,7 @@
         </nav>
 
         <div class="audio-controls" id="audioControls" aria-label="Audio">
-          <button id="sfxToggle" class="chip-toggle active" type="button" aria-pressed="true">
+          <button id="sfxToggle" aria-describedby="audioStatus" class="chip-toggle active" type="button" aria-pressed="true">
             <span class="toggle-dot" aria-hidden="true"></span>
             <span data-i18n="sfx">SFX</span>
           </button>
@@ -54,6 +54,7 @@
             <span data-i18n="voice">Voz</span>
           </button>
         </div>
+        <small id="audioStatus" class="audio-status" role="status" hidden></small>
       </div>
     </header>
 
@@ -238,6 +239,7 @@
   </main>
 
   <script src="teamlist.js" defer></script>
+  <script src="audio.js" defer></script>
   <script src="script.js" defer></script>
 </body>
 </html>
