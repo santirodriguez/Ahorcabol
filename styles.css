@@ -146,6 +146,8 @@ button:disabled {
   gap: 8px;
 }
 
+.audio-controls { flex-wrap: wrap; justify-content: center; }
+
 .segmented,
 .audio-controls {
   gap: 4px;

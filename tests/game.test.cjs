@@ -309,7 +309,7 @@ test('local language flags keep the selected countries and contain complete artw
 
 function audioSpy() {
   const calls = [];
-  return { calls, supported: true, status: 'idle', getStatus() { return this.status; },
+  return { calls, musicSupported: true, getMusicStatus: () => 'idle', setMusicEnabled() {}, activate() {}, supported: true, status: 'idle', getStatus() { return this.status; },
     play(kind) { calls.push(kind); }, clear() { calls.push('clear'); },
     setEnabled(value) { calls.push(`enabled:${value}`); },
     setPaused(value) { calls.push(`paused:${value}`); },
@@ -399,4 +399,58 @@ test('superseded speech callbacks cannot change the new utterance or survive giv
   utterances[1].onstart();
   utterances[1].onend();
   assert.deepEqual(audio.calls, ['speech:true', 'speech:false', 'lose']);
+});
+
+test('music preferences migrate independently, default off and never activate at load', () => {
+  for (const preference of [undefined, null, 'true', 1, false, true]) {
+    const audio = audioSpy();
+    const loaded = [];
+    audio.setMusicEnabled = value => loaded.push(value);
+    let activations = 0;
+    audio.activate = () => activations++;
+    const g = game({ data: clubs, audioController: audio, saved: snapshot({}, { musicEnabled: preference, sfxEnabled: false, voiceEnabled: true }) });
+    assert.equal(g.state.musicEnabled, preference === true);
+    assert.deepEqual(loaded, [preference === true]);
+    assert.equal(activations, 0);
+    assert.equal(g.state.sfxEnabled, false);
+    assert.equal(g.state.voiceEnabled, true);
+    assert.equal(g.state.current.nombre, 'Boca');
+    g.run('toggleMusic()');
+    assert.equal(JSON.parse(g.persisted()).musicEnabled, preference !== true);
+    assert.equal(g.state.sfxEnabled, false);
+    assert.equal(g.state.voiceEnabled, true);
+    assert.equal(activations, preference === true ? 0 : 1);
+  }
+});
+
+test('music status explains pending/failed output while retaining preference', () => {
+  const audio = audioSpy();
+  let status = 'pending';
+  audio.getMusicStatus = () => status;
+  const g = game({ audioController: audio, saved: JSON.stringify({ musicEnabled: true }) });
+  assert.equal(g.elements.get('musicToggle').attributes['aria-pressed'], 'true');
+  assert.equal(g.elements.get('musicStatus').hidden, false);
+  status = 'playing'; audio.onStatusChange();
+  assert.equal(g.elements.get('musicStatus').hidden, true);
+  assert.equal(g.elements.get('musicToggle').classList.contains('active'), true);
+  status = 'error'; audio.onStatusChange();
+  assert.equal(g.elements.get('musicToggle').disabled, true);
+  assert.equal(g.elements.get('musicToggle').classList.contains('active'), false);
+  assert.equal(g.state.musicEnabled, true);
+  assert.equal(g.elements.get('sfxToggle').disabled, false);
+});
+
+test('music settings survive blocked storage and next-round gesture can unlock saved music', () => {
+  const audio = audioSpy();
+  let activations = 0;
+  audio.activate = () => activations++;
+  const g = game({ audioController: audio, storageBlocked: true });
+  g.run('toggleMusic()');
+  assert.equal(g.state.musicEnabled, true);
+  g.run('els.nextGame').listeners.click();
+  assert.equal(activations, 2);
+  assert.equal(g.state.roundStatus, 'playing');
+  g.run('applyLanguage("ca")');
+  assert.equal(activations, 2);
+  assert.equal(g.state.musicEnabled, true);
 });

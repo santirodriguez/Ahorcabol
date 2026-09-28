@@ -15,6 +15,9 @@ function fixture(options = {}) {
   const timers = new Map();
   const contexts = [];
   const nodes = [];
+  const gains = [];
+  const renders = [];
+  const offlineContexts = [];
   const resumes = [];
   const suspends = [];
   const settings = { initial: 'running', ...options };
@@ -57,7 +60,7 @@ function fixture(options = {}) {
     createOscillator() {
       if (settings.oscillatorThrows) throw Error('oscillator');
       const node = {
-        frequency: parameter(), starts: [], stops: [], connected: false,
+        context: this, frequency: parameter(), starts: [], stops: [], connected: false,
         connect() { this.connected = true; }, disconnect() { this.connected = false; },
         start(at) { this.starts.push(at); }, stop(at) { this.stops.push(at); },
         end() { this.onended?.(); }
@@ -67,7 +70,33 @@ function fixture(options = {}) {
     }
     createGain() {
       if (settings.gainThrows) throw Error('gain');
-      return { gain: parameter(), connect() {}, disconnect() {} };
+      const gain = { context: this, gain: parameter(), connect() {}, disconnect() {} };
+      gains.push(gain);
+      return gain;
+    }
+  }
+  Context.prototype.createBufferSource = function() {
+    if (settings.bufferSourceThrows && !this.offline) throw Error('buffer source');
+    return this.createOscillator();
+  };
+  class OfflineContext extends Context {
+    constructor(channels, frames, rate) {
+      super(); contexts.pop();
+      this.offline = true;
+      this.frames = frames; this.rate = rate; this.channels = channels;
+      offlineContexts.push(this);
+      if (settings.offlineThrows) throw Error('offline');
+    }
+    createBuffer(channels, frames, rate) {
+      const samples = new Float32Array(frames);
+      return { duration: frames / rate, length: frames, numberOfChannels: channels, getChannelData: () => samples };
+    }
+    createBiquadFilter() { return { frequency: parameter(), Q: parameter(), connect() {} }; }
+    startRendering() {
+      const buffer = this.createBuffer(this.channels, this.frames, this.rate);
+      if (settings.rejectRender) return Promise.reject(Error('render'));
+      if (settings.deferRender) return new Promise((resolve, reject) => renders.push({ resolve: () => resolve(buffer), reject }));
+      return Promise.resolve(buffer);
     }
   }
   const host = {
@@ -76,13 +105,14 @@ function fixture(options = {}) {
     clearTimeout(id) { timers.delete(id); }
   };
   if (!options.unsupported) host.AudioContext = Context;
+  if (!options.noOffline) host.OfflineAudioContext = OfflineContext;
   vm.runInNewContext(source, { window: host, Date });
   return {
-    audio: host.AHORCABOL_AUDIO, contexts, nodes, resumes, suspends, timers, settings, state,
+    audio: host.AHORCABOL_AUDIO, contexts, nodes, gains, renders, offlineContexts, resumes, suspends, timers, settings, state,
     advance(ms) { clock += ms; },
     cleanup() { for (const [id, callback] of [...timers]) { timers.delete(id); callback(); } },
     endAll() { nodes.forEach(node => node.end()); },
-    live: () => nodes.filter(node => node.connected)
+    live: () => nodes.filter(node => node.connected && !node.context.offline)
   };
 }
 
@@ -237,4 +267,155 @@ test('unknown cues and disabled/paused play do not allocate nodes', () => {
   f.audio.play('toString'); f.audio.setEnabled(false); f.audio.play('win');
   f.audio.setEnabled(true); f.audio.setPaused(true); f.audio.play('win');
   assert.equal(f.contexts.length, 0);
+});
+
+test('music stays silent and unrendered at load, then caches one exact mono loop', async () => {
+  const f = fixture();
+  f.audio.setMusicEnabled(true);
+  await flush();
+  assert.equal(f.contexts.length, 0);
+  assert.equal(f.offlineContexts.length, 0);
+  f.audio.activate(); await flush();
+  assert.equal(f.audio.getMusicStatus(), 'playing');
+  assert.equal(f.contexts.length, 1);
+  assert.equal(f.offlineContexts.length, 1);
+  const loop = f.live().find(n => n.loop);
+  assert.equal(loop.buffer.numberOfChannels, 1);
+  assert.equal(loop.buffer.length, Math.round(32000 * 32 * 60 / 112));
+  assert.ok(loop.buffer.length * 4 < 4 * 1024 * 1024);
+  assert.equal(loop.loopEnd, loop.buffer.duration);
+  for (let i = 0; i < 30; i++) { f.audio.clear(); f.audio.activate(); }
+  assert.equal(f.live().filter(n => n.loop).length, 1);
+  assert.equal(f.offlineContexts.length, 1);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.live().find(n => n.loop), loop);
+});
+
+test('unresolved render ON/OFF/ON uses one render and starts only the latest intent', async () => {
+  const f = fixture({ deferRender: true });
+  f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+  assert.equal(f.audio.getMusicStatus(), 'pending');
+  f.audio.setMusicEnabled(false); f.audio.setMusicEnabled(true); f.audio.activate();
+  assert.equal(f.renders.length, 1);
+  f.renders[0].resolve(); await flush();
+  assert.equal(f.live().filter(n => n.loop).length, 1);
+  f.audio.setMusicEnabled(false); f.audio.setMusicEnabled(true); f.audio.activate();
+  await flush(); f.cleanup();
+  assert.equal(f.live().filter(n => n.loop).length, 1);
+  assert.equal(f.offlineContexts.length, 1);
+});
+
+test('render completion after off or hide never starts music on its own', async () => {
+  for (const cancel of [a => a.setMusicEnabled(false), a => a.setPaused(true)]) {
+    const f = fixture({ deferRender: true });
+    f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+    cancel(f.audio); f.renders[0].resolve(); await flush();
+    f.audio.setPaused(false); await flush();
+    assert.equal(f.live().filter(n => n.loop).length, 0);
+    assert.equal(f.audio.getMusicStatus(), 'idle');
+    f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+    assert.equal(f.live().filter(n => n.loop).length, 1);
+    assert.equal(f.offlineContexts.length, 1);
+  }
+});
+
+test('music and effects are independent and all-off suspends after bounded cleanup', async () => {
+  const f = fixture();
+  f.audio.setEnabled(false); f.audio.setMusicEnabled(true);
+  f.audio.play('correct'); await flush();
+  assert.equal(f.live().length, 1);
+  assert.equal(f.live()[0].loop, true);
+  f.audio.setEnabled(true); f.audio.play('hint');
+  assert.equal(f.live().length, 3);
+  f.audio.setEnabled(false); f.cleanup();
+  assert.equal(f.live().length, 1);
+  assert.equal(f.contexts[0].state, 'running');
+  f.audio.setMusicEnabled(false); f.cleanup(); await flush();
+  assert.equal(f.live().length, 0);
+  assert.equal(f.contexts[0].state, 'suspended');
+});
+
+test('music failures do not break effects or repeatedly render a broken backend', async () => {
+  for (const settings of [{ noOffline: true }, { offlineThrows: true }, { rejectRender: true }, { bufferSourceThrows: true }]) {
+    const f = fixture(settings);
+    f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+    assert.ok(['error', 'unavailable'].includes(f.audio.getMusicStatus()));
+    f.audio.play('correct'); await flush();
+    assert.equal(f.live().length, 2);
+    assert.equal(f.audio.getStatus(), 'ready');
+    assert.ok(f.offlineContexts.length <= 1);
+  }
+});
+
+test('music respects rejected resume and interruption until another eligible gesture', async () => {
+  const f = fixture({ initial: 'suspended', rejectResume: true });
+  f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+  assert.equal(f.live().length, 0);
+  f.settings.rejectResume = false;
+  f.audio.activate(); await flush();
+  assert.equal(f.live().length, 1);
+  f.state(f.contexts[0], 'interrupted');
+  assert.equal(f.live().length, 0);
+  f.state(f.contexts[0], 'running'); await flush();
+  assert.equal(f.live().length, 0);
+  f.audio.activate(); await flush();
+  assert.equal(f.live().length, 1);
+  assert.equal(f.offlineContexts.length, 1);
+});
+
+test('speech and terminal ducking restore the mix without restarting the loop', async () => {
+  const f = fixture();
+  f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+  const loop = f.live()[0];
+  const bus = f.gains.find(g => !g.context.offline && g.gain.events.some(e => e[1] === 0.28));
+  f.audio.setSpeechActive(true);
+  assert.equal(bus.gain.events.at(-1)[1], 0.075);
+  f.audio.play('win');
+  assert.equal(bus.gain.events.at(-1)[1], 0.075);
+  f.audio.setSpeechActive(false);
+  assert.equal(bus.gain.events.at(-1)[1], 0.28);
+  f.audio.clear(); f.cleanup();
+  f.audio.setSpeechActive(true); f.cleanup();
+  assert.equal(bus.gain.events.at(-1)[1], 0.28);
+  assert.equal(f.timers.size, 0);
+  assert.equal(f.live().find(n => n.loop), loop);
+});
+
+test('five simulated minutes of playback and toggles retain one buffer and bounded sources', async () => {
+  const f = fixture();
+  f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+  const buffer = f.live()[0].buffer;
+  for (let second = 0; second < 300; second++) {
+    f.advance(1000); f.contexts[0].currentTime++;
+    if (second % 5 === 0) { f.audio.setMusicEnabled(false); f.audio.setMusicEnabled(true); f.audio.activate(); }
+    if (second % 7 === 0) { f.audio.setPaused(true); f.cleanup(); f.audio.setPaused(false); f.audio.activate(); }
+    await flush(); f.cleanup();
+    assert.equal(f.live().length, 1);
+    assert.equal(f.live()[0].buffer, buffer);
+    assert.equal(f.timers.size, 0);
+  }
+  assert.equal(f.contexts.length, 1);
+  assert.equal(f.offlineContexts.length, 1);
+  f.audio.setPaused(true); f.cleanup(); await flush();
+  assert.equal(f.live().length, 0);
+  assert.equal(f.contexts[0].state, 'suspended');
+});
+
+test('render finishing before a delayed unlock cannot bypass pause or context invalidation', async () => {
+  const f = fixture({ initial: 'suspended', deferResume: true, deferRender: true });
+  f.audio.setMusicEnabled(true); f.audio.activate(); await flush();
+  f.renders[0].resolve(); await flush();
+  assert.equal(f.live().length, 0);
+  f.audio.setPaused(true); f.resumes[0].resolve(); await flush();
+  assert.equal(f.live().length, 0);
+  f.audio.setPaused(false); f.audio.activate();
+  f.resumes[1].resolve(); await flush();
+  assert.equal(f.live().length, 1);
+  const buffer = f.live()[0].buffer;
+  f.state(f.contexts[0], 'closed');
+  assert.equal(f.live().length, 0);
+  f.audio.activate(); f.resumes[2].resolve(); await flush();
+  assert.equal(f.live().length, 1);
+  assert.equal(f.live()[0].buffer, buffer);
+  assert.equal(f.offlineContexts.length, 1);
 });

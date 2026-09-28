@@ -81,6 +81,10 @@ const I18N = {
     voiceUnavailable: "No hay una voz disponible para este idioma en el navegador.",
     sfxUnavailable: "El audio no está disponible en este navegador.",
     sfxPaused: "Audio pausado. Volvé a jugar para activarlo.",
+    music: "Música",
+    musicPending: "Preparando música…",
+    musicUnavailable: "La música no está disponible en este navegador.",
+    musicPaused: "Música pausada. Jugá o desactivá y activá Música para escucharla.",
     speechGoal: "¡Gooooool!",
     speechOut: "¡Fuera!",
     speechWin: "¡Golazo!",
@@ -150,6 +154,10 @@ const I18N = {
     voiceUnavailable: "No voice is available for this language in the browser.",
     sfxUnavailable: "Audio is not available in this browser.",
     sfxPaused: "Audio paused. Play again to activate it.",
+    music: "Music",
+    musicPending: "Preparing music…",
+    musicUnavailable: "Music is not available in this browser.",
+    musicPaused: "Music paused. Play or turn Music off and on to listen.",
     speechGoal: "Goal!",
     speechOut: "Wide!",
     speechWin: "What a goal!",
@@ -219,6 +227,10 @@ const I18N = {
     voiceUnavailable: "No hi ha cap veu disponible per a aquest idioma al navegador.",
     sfxUnavailable: "L'àudio no està disponible en aquest navegador.",
     sfxPaused: "Àudio en pausa. Torna a jugar per activar-lo.",
+    music: "Música",
+    musicPending: "Preparant música…",
+    musicUnavailable: "La música no està disponible en aquest navegador.",
+    musicPaused: "Música en pausa. Juga o desactiva i activa Música per escoltar-la.",
     speechGoal: "Gol!",
     speechOut: "Fora!",
     speechWin: "Golàs!",
@@ -275,6 +287,7 @@ const state = {
   language: DEFAULT_LANGUAGE,
   country: "ALL",
   sfxEnabled: true,
+  musicEnabled: false,
   voiceEnabled: false,
   roundStatus: ROUND.LOADING,
   savedRound: null
@@ -302,6 +315,8 @@ const els = {
   languageSwitcher: document.getElementById("languageSwitcher"),
   audioControls: document.getElementById("audioControls"),
   audioStatus: document.getElementById("audioStatus"),
+  musicStatus: document.getElementById("musicStatus"),
+  musicToggle: document.getElementById("musicToggle"),
   sfxToggle: document.getElementById("sfxToggle"),
   voiceToggle: document.getElementById("voiceToggle"),
   scoreboard: document.getElementById("scoreboard"),
@@ -361,6 +376,7 @@ function loadPersist() {
   if (LANGUAGES.includes(saved.language)) state.language = saved.language;
   if (typeof saved.country === "string") state.country = saved.country;
   if (typeof saved.sfxEnabled === "boolean") state.sfxEnabled = saved.sfxEnabled;
+  if (typeof saved.musicEnabled === "boolean") state.musicEnabled = saved.musicEnabled;
   if (typeof saved.voiceEnabled === "boolean") state.voiceEnabled = saved.voiceEnabled;
   if (saved.version === STORAGE_VERSION && saved.round && typeof saved.round === "object") {
     state.savedRound = saved.round;
@@ -396,6 +412,7 @@ function savePersist() {
         language: state.language,
         country: state.country,
         sfxEnabled: state.sfxEnabled,
+        musicEnabled: state.musicEnabled,
         voiceEnabled: state.voiceEnabled,
         round: currentRoundSnapshot() || state.savedRound
       })
@@ -408,6 +425,9 @@ function savePersist() {
 // A missing optional controller must never prevent a round from starting.
 const gameAudio = window.AHORCABOL_AUDIO || {
   supported: false,
+  musicSupported: false,
+  getMusicStatus: () => "unavailable",
+  setMusicEnabled() {}, activate() {},
   getStatus: () => "unavailable",
   play() {}, clear() {}, setEnabled() {}, setPaused() {}
 };
@@ -518,6 +538,17 @@ function renderAudioSettings() {
   els.audioStatus.textContent = audioMessage;
   els.audioStatus.hidden = !audioMessage;
   els.voiceToggle.title = voiceAvailable ? t("voice") : t("voiceUnavailable");
+
+  const musicStatus = gameAudio.getMusicStatus();
+  els.musicToggle.disabled = !gameAudio.musicSupported || musicStatus === "error";
+  els.musicToggle.setAttribute("aria-pressed", String(state.musicEnabled));
+  els.musicToggle.classList.toggle("active", state.musicEnabled && musicStatus === "playing");
+  const musicMessage = !gameAudio.musicSupported || musicStatus === "error" ? t("musicUnavailable")
+    : !state.musicEnabled ? "" : musicStatus === "pending" ? t("musicPending")
+    : musicStatus !== "playing" ? t("musicPaused") : "";
+  els.musicStatus.textContent = musicMessage;
+  els.musicStatus.hidden = !musicMessage;
+  els.musicToggle.title = musicMessage || t("music");
 }
 
 const effectTimers = new Set();
@@ -1103,6 +1134,7 @@ function onKeydown(event) {
     [ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)
   ) {
     event.preventDefault();
+    gameAudio.activate();
     startRound();
   }
 }
@@ -1259,6 +1291,16 @@ function toggleSfx() {
   renderAudioSettings();
   savePersist();
   if (state.sfxEnabled) sfx.good();
+  else gameAudio.activate();
+}
+
+function toggleMusic() {
+  if (!gameAudio.musicSupported || gameAudio.getMusicStatus() === "error") return;
+  state.musicEnabled = !state.musicEnabled;
+  gameAudio.setMusicEnabled(state.musicEnabled);
+  if (state.musicEnabled) gameAudio.activate();
+  renderAudioSettings();
+  savePersist();
 }
 
 function toggleVoice() {
@@ -1269,6 +1311,7 @@ function toggleVoice() {
 
   state.voiceEnabled = !state.voiceEnabled;
   if (!state.voiceEnabled) cancelSpeech();
+  gameAudio.activate();
   renderAudioSettings();
   savePersist();
 }
@@ -1283,14 +1326,16 @@ function bindEvents() {
     abandonRoundForFilterChange();
     state.country = els.country.value;
     rebuildPool();
+    gameAudio.activate();
     startRound();
   });
 
+  els.musicToggle.addEventListener("click", toggleMusic);
   els.sfxToggle.addEventListener("click", toggleSfx);
   els.voiceToggle.addEventListener("click", toggleVoice);
   els.hint.addEventListener("click", useHint);
   els.giveUp.addEventListener("click", giveUp);
-  els.nextGame.addEventListener("click", startRound);
+  els.nextGame.addEventListener("click", () => { gameAudio.activate(); startRound(); });
   els.retryData.addEventListener("click", () => window.location.reload());
   window.addEventListener("keydown", onKeydown);
   document.addEventListener("visibilitychange", () => {
@@ -1307,6 +1352,7 @@ function bindEvents() {
 (function init() {
   loadPersist();
   gameAudio.setEnabled(state.sfxEnabled);
+  gameAudio.setMusicEnabled(state.musicEnabled);
   gameAudio.setPaused(Boolean(document.hidden));
   gameAudio.onStatusChange = renderAudioSettings;
   buildKeyboard();

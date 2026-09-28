@@ -70,13 +70,22 @@ Before releasing, check narrow mobile and desktop layouts in a browser, all thre
 languages, keyboard/touch input, reload recovery and direct `file://` play.
 Storage and speech availability depend on the browser; gameplay works without them.
 
-Effects are synthesized locally in the optional classic script `audio.js`.
-Audio starts only after a play action or explicit SFX activation. Muting, starting
+Effects and an original eight-bar background loop are synthesized locally in
+the optional classic script `audio.js`, under the project license.
+Audio starts only after a play action or explicit audio activation. Muting, starting
 another round, or hiding the page cancels pending effects. Returning to the page
 requires another play action to resume sound. A blocked audio backend never
 prevents gameplay or erases the saved sound preference. Voice remains independent.
+Music defaults off and has its own toggle, separate from SFX and voice. Its
+saved preference never autoplays on reload: use a play action or toggle Music
+back on. On first use, OfflineAudioContext renders one mono 32 kHz buffer
+(about 17 seconds / 2.1 MiB), reused across rounds without downloading audio.
+Music stays quiet and ducks during speech and terminal effects. Hiding the page
+stops playback until another play action. Unsupported/failed music leaves the
+other channels and game usable.
 Audio tests cover scheduling and cancellation, not perceived sound quality;
-audition cues and verify interruption/recovery in a browser before releasing.
+audition cues and at least three music loops with voice, verify interruption/
+recovery, and measure first-use latency on a phone before releasing.
 
 ## Screenshot
 

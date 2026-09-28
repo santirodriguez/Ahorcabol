@@ -49,11 +49,16 @@
             <span class="toggle-dot" aria-hidden="true"></span>
             <span data-i18n="sfx">SFX</span>
           </button>
+          <button id="musicToggle" aria-describedby="musicStatus" class="chip-toggle" type="button" aria-pressed="false">
+            <span class="toggle-dot" aria-hidden="true"></span>
+            <span data-i18n="music">Música</span>
+          </button>
           <button id="voiceToggle" class="chip-toggle" type="button" aria-pressed="false">
             <span class="toggle-dot" aria-hidden="true"></span>
             <span data-i18n="voice">Voz</span>
           </button>
         </div>
+        <small id="musicStatus" class="audio-status" role="status" hidden></small>
         <small id="audioStatus" class="audio-status" role="status" hidden></small>
       </div>
     </header>
