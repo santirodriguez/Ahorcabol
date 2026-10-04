@@ -1,59 +1,126 @@
 # Ahorcabol
 
 <p align="center">
-  <img src="assets/branding/ahorcabol-head-medium.png" alt="Ahorcabol" width="560" />
+  <img src="assets/branding/ahorcabol-head-medium.png" alt="Ahorcabol" width="620" />
 </p>
 
 <p align="center">
-  <strong>Football hangman. Fewer tactics, more spelling.</strong>
+  <strong>Football hangman. One club. Six lives. No VAR.</strong>
 </p>
 
-Ahorcabol is a football version of hangman: pick a league, guess the club, and try not to run out of lives before the name gives up first.
+<p align="center">
+  Pick a league, guess the club, build a streak, and try not to get sent off by the alphabet.
+</p>
 
-## Play
+<p align="center">
+  <a href="https://santiagorodriguez.com/Ahorcabol/">
+    <img src="https://img.shields.io/badge/PLAY_ONLINE-16a34a?style=for-the-badge&labelColor=07131f" alt="Play Ahorcabol online" />
+  </a>
+  <a href="https://github.com/santirodriguez/Ahorcabol/releases">
+    <img src="https://img.shields.io/badge/RELEASES-GitHub-2563eb?style=for-the-badge&logo=github&logoColor=white&labelColor=07131f" alt="Ahorcabol releases on GitHub" />
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/LICENSE-GPL--3.0-f59e0b?style=for-the-badge&labelColor=07131f" alt="GPL-3.0 license" />
+  </a>
+</p>
 
-**Play online:** https://santiagorodriguez.com/Ahorcabol/
+<p align="center">
+  <img src="assets/branding/usa.svg" alt="" width="22" /> <strong>English</strong>
+  &nbsp;·&nbsp;
+  <img src="assets/branding/argentina.svg" alt="" width="22" /> <strong>Español</strong>
+  &nbsp;·&nbsp;
+  <img src="assets/branding/senyera.svg" alt="" width="22" /> <strong>Català</strong>
+</p>
 
-## What's new in 1.8.0
+---
 
-- Original synthesized effects and lightweight background music with separate controls.
-- Music enabled by default; saved choices are respected and playback waits for interaction.
-- Reliable audio cancellation when muted or hidden, with quieter music during voice feedback.
-- Letter-specific feedback, explicit hidden-letter labels and calmer decorative motion.
-- Smaller runtime branding assets and dependency-free local checks.
+## ⚽ Play
 
+<p align="center">
+  <a href="https://santiagorodriguez.com/Ahorcabol/">
+    <img src="https://img.shields.io/badge/▶_PLAY_AHORCABOL-111827?style=for-the-badge" alt="Play Ahorcabol" />
+  </a>
+</p>
 
-## The game
+Play it in a modern browser, or download the repository and open `index.html` locally. No installation, account, or build step is needed to play.
 
-- Pick one league or mix every club into the same bag.
-- You get six lives. Wrong letters spend them; hints are not exactly charity either.
-- Wins add points and keep your streak alive. Losing, giving up, or changing leagues mid-round does not.
-- Play with the on-screen keyboard or a physical one. `Ñ` gets its own key, as it should.
-- Sound effects, music and voice have independent controls.
-- The club pool is shuffled without repeats until exhausted during a session. Changing language keeps its order. Reloading rebuilds the pool but avoids an immediate repeat.
+<p align="center">
+  <img src="assets/screenshots/screenshot-v1.8.0.png" alt="Ahorcabol v1.8.0 completed round with music enabled" width="900" />
+</p>
 
-### Languages
+<p align="center">
+  <sub>Ahorcabol v1.8.0 — football, letters, and questionable decisions.</sub>
+</p>
 
-- 🇦🇷 **Español**
-- 🇺🇸 **English**
-- <img src="assets/branding/senyera.svg" alt="Senyera" width="22"> **Català**
+---
 
-## Clubs
+## ✨ Highlights
 
-The game includes clubs from Argentina, Brazil, England, France, Germany, Portugal, Spain and MLS.
+|  |  |  |
+| :---: | :---: | :---: |
+| **⚽ Football hangman** | **🏆 Score & streaks** | **🎵 Match-day audio** |
+| Clubs from Argentina, Brazil, England, France, Germany, Portugal, Spain and MLS. | Correct letters score points, wins build your streak, and hints cost a life. | Original background music, sound effects and browser voice, each with its own control. |
+| **⌨️ Play your way** | **🌐 Three languages** | **📦 No installation** |
+| Use the on-screen keyboard or a physical one on desktop or mobile. | English, Español and Català, with the same game state when you switch. | Play online or open the game directly from a local folder. |
 
-`teamlist.js` is the club list used by the game. It currently follows the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
+Ahorcabol keeps the rules simple: six lives, one hidden club, and just enough help to make using a hint feel slightly guilty.
 
-## Offline
+---
 
-Download the repository ZIP, extract it, and open `index.html` directly. That's it.
+## 🆕 What’s new in 1.8.0
 
-Everything needed to play is local. A static web server still works too, if you feel like making hangman slightly more official.
+- **Original match-day music** with a separate Music control.
+- **Smoother sound effects** and more reliable audio when muting, changing rounds, or leaving the page.
+- **Clearer guess and hint feedback** so the game communicates more without getting in the way.
+- **Calmer motion and cleaner presentation**, including improved goal and ball animations.
+- **Better accessibility** for the hidden club name and game status.
+- **Lighter runtime visuals** with smaller branding assets.
 
-## Development checks
+Saved games and existing audio choices continue to work as before.
 
-No installation or build step is needed to play. With Node.js 22 or later, run
-the checks locally:
+---
+
+## 🎯 How to play
+
+1. Choose a league — or mix every club into one pool.
+2. Guess letters using the on-screen keyboard or your physical keyboard.
+3. You have **six lives**. Wrong letters cost one.
+4. A hint reveals a hidden letter everywhere it appears, but also costs one life.
+5. Correct guesses earn points. Winning keeps your streak alive.
+6. Clubs are shuffled without repeats until the current pool is exhausted.
+
+Changing league during a round, losing, or giving up resets the streak — but not your total score.
+
+---
+
+## 🌍 Clubs
+
+The game includes clubs from:
+
+**Argentina · Brazil · England · France · Germany · Portugal · Spain · MLS**
+
+The catalog is intentionally local and bundled with the game, so Ahorcabol does not need a live sports service just to start a round.
+
+---
+
+## 📦 Offline
+
+Ahorcabol is a static game. Download the repository ZIP, extract it, and open `index.html`.
+
+Everything needed to play is included locally. A normal static web server works too, but it is not required.
+
+---
+
+<details>
+<summary><strong>🛠️ Development & technical notes</strong></summary>
+
+<br />
+
+Ahorcabol is intentionally lightweight: plain HTML, CSS and JavaScript, with no package installation or build step required to play.
+
+### Development checks
+
+With **Node.js 22 or later**:
 
 ```sh
 node --check audio.js
@@ -62,49 +129,39 @@ node --check teamlist.js
 node --test tests/*.test.cjs
 ```
 
-The dependency-free tests execute the game runtime with a small DOM adapter
-and exercise the audio controller with a fake audio clock/backend.
-They cover scoring, hints, round outcomes, persistence recovery, keyboard input,
-localization, the shuffle bag and catalog playability. They do not replace
-browser checks for layout, focus behavior, speech/audio or screen readers.
+The dependency-free tests run the real game logic with a small DOM adapter and exercise the audio controller with a fake audio backend. They cover scoring, hints, round outcomes, saved-state recovery, keyboard input, localization, shuffle behavior, catalog playability and audio lifecycle behavior.
 
-Before releasing, check narrow mobile and desktop layouts in a browser, all three
-languages, keyboard/touch input, reload recovery and direct `file://` play.
-Storage and speech availability depend on the browser; gameplay works without them.
+Browser checks still matter for layout, focus, speech/audio behavior and screen readers.
 
-Effects and an original eight-bar background loop are synthesized locally in
-the optional classic script `audio.js`, under the project license.
-Audio starts only after a play action or explicit audio activation. Muting, starting
-another round, or hiding the page cancels pending effects. Returning to the page
-requires another play action to resume sound. A blocked audio backend never
-prevents gameplay or erases the saved sound preference. Voice remains independent.
-Music defaults on when no valid preference exists; an explicit saved off choice
-is preserved. It has its own toggle, separate from SFX and voice. Its
-saved preference never autoplays on reload: play or select Music once to start.
-While playing or preparing, selecting Music turns it off; a paused channel can
-be resumed with one click. The highlighted toggle reflects the saved choice,
-and its status explains when playback is waiting or preparing. On first use, OfflineAudioContext renders one mono 32 kHz buffer
-(about 17 seconds / 2.1 MiB), reused across rounds without downloading audio.
-Music stays quiet and ducks during speech and terminal effects. Hiding the page
-stops playback until another play action. Unsupported/failed music leaves the
-other channels and game usable.
-Audio tests cover scheduling and cancellation, not perceived sound quality;
-audition cues and at least three music loops with voice, verify interruption/
-recovery, and measure first-use latency on a phone before releasing.
+### Audio behavior
 
-## Screenshot
+Effects and the original eight-bar background loop are synthesized locally in `audio.js`; Ahorcabol does not download music or sound files.
 
-<p align="center">
-  <img src="assets/screenshots/screenshot-v1.8.0.png" alt="Ahorcabol 1.8.0 — completed round with music enabled" width="90%" />
-</p>
+- Music, sound effects and voice are independent.
+- Music is enabled by default when there is no saved choice, but playback still waits for user interaction.
+- An explicit saved Music-off choice remains off.
+- Reloading does not autoplay sound.
+- Hiding the page stops playback until another eligible interaction resumes it.
+- Unsupported audio or speech never prevents the game from working.
 
-## Author
+### Club data
 
-[Santiago Rodriguez](https://santiagorodriguez.com)
+`teamlist.js` contains the bundled club catalog. It currently follows the 2026 Argentine, Brazilian and MLS seasons and the 2026/27 English, French, German, Portuguese and Spanish top-flight seasons.
 
-<a href="https://santiagorodriguez.com/donate"><img src="assets/branding/donate.svg" alt="Donate" height="52" /></a>
+Before a release, check narrow mobile and desktop layouts, all three languages, keyboard/touch input, reload recovery and direct `file://` play.
 
-## License
+</details>
 
-GPLv3. See [`LICENSE`](LICENSE).
+---
 
+## 👤 Author
+
+Made by **[Santiago Rodriguez](https://santiagorodriguez.com)**.
+
+<a href="https://santiagorodriguez.com/donate">
+  <img src="assets/branding/donate.svg" alt="Donate" height="52" />
+</a>
+
+## 📄 License
+
+**GNU General Public License v3.0 (GPL-3.0)** — see [LICENSE](LICENSE).
