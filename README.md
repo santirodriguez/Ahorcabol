@@ -14,7 +14,7 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 
 **Play online:** https://santiagorodriguez.com/Ahorcabol/
 
-## What's new in 1.8.0 (candidate)
+## What's new in 1.8.0
 
 - Original synthesized effects and lightweight background music with separate controls.
 - Music enabled by default; saved choices are respected and playback waits for interaction.
@@ -22,7 +22,6 @@ Ahorcabol is a football version of hangman: pick a league, guess the club, and t
 - Letter-specific feedback, explicit hidden-letter labels and calmer decorative motion.
 - Smaller runtime branding assets and dependency-free local checks.
 
-This branch prepares v1.8.0; it has not been published as a release.
 
 ## The game
 
