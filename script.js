@@ -56,7 +56,9 @@ const I18N = {
     noTeams: "No hay equipos disponibles con este filtro.",
     noMoreHints: "Con una sola vida ya no hay margen para otra pista.",
     alreadyRevealed: "Ya está todo revelado.",
-    hintMessage: "Pista servida. Costó una vida.",
+    hintMessage: "Pista: {letter}. Costó una vida.",
+    hiddenLetter: "letra oculta",
+    wordBreak: "espacio",
     goal: "¡Gol! Esa letra estaba.",
     out: "Al palo. Esa letra no está.",
     gameOver: "Se terminó. Era {team}.",
@@ -80,6 +82,11 @@ const I18N = {
     gaveUpSummary: "El equipo era {team}. La racha vuelve a cero.",
     voiceUnavailable: "No hay una voz disponible para este idioma en el navegador.",
     sfxUnavailable: "El audio no está disponible en este navegador.",
+    sfxPaused: "Audio pausado. Volvé a jugar para activarlo.",
+    music: "Música",
+    musicPending: "Preparando música…",
+    musicUnavailable: "La música no está disponible en este navegador.",
+    musicPaused: "Música lista. Tocá Música o jugá para escucharla.",
     speechGoal: "¡Gooooool!",
     speechOut: "¡Fuera!",
     speechWin: "¡Golazo!",
@@ -124,7 +131,9 @@ const I18N = {
     noTeams: "No teams are available with this filter.",
     noMoreHints: "With one life left there is no room for another hint.",
     alreadyRevealed: "Everything is already revealed.",
-    hintMessage: "Hint delivered. It cost one life.",
+    hintMessage: "Hint: {letter}. It cost one life.",
+    hiddenLetter: "hidden letter",
+    wordBreak: "space",
     goal: "Goal. That letter is in.",
     out: "Off the post. That letter is out.",
     gameOver: "That's it. It was {team}.",
@@ -148,6 +157,11 @@ const I18N = {
     gaveUpSummary: "The team was {team}. Your streak is back to zero.",
     voiceUnavailable: "No voice is available for this language in the browser.",
     sfxUnavailable: "Audio is not available in this browser.",
+    sfxPaused: "Audio paused. Play again to activate it.",
+    music: "Music",
+    musicPending: "Preparing music…",
+    musicUnavailable: "Music is not available in this browser.",
+    musicPaused: "Music ready. Select Music or play to listen.",
     speechGoal: "Goal!",
     speechOut: "Wide!",
     speechWin: "What a goal!",
@@ -192,7 +206,9 @@ const I18N = {
     noTeams: "No hi ha equips disponibles amb aquest filtre.",
     noMoreHints: "Amb una sola vida ja no hi ha marge per a una altra pista.",
     alreadyRevealed: "Ja està tot revelat.",
-    hintMessage: "Pista servida. Ha costat una vida.",
+    hintMessage: "Pista: {letter}. Ha costat una vida.",
+    hiddenLetter: "lletra oculta",
+    wordBreak: "espai",
     goal: "Gol. Aquesta lletra hi és.",
     out: "Al pal. Aquesta lletra no hi és.",
     gameOver: "S'ha acabat. Era {team}.",
@@ -216,6 +232,11 @@ const I18N = {
     gaveUpSummary: "L'equip era {team}. La ratxa torna a zero.",
     voiceUnavailable: "No hi ha cap veu disponible per a aquest idioma al navegador.",
     sfxUnavailable: "L'àudio no està disponible en aquest navegador.",
+    sfxPaused: "Àudio en pausa. Torna a jugar per activar-lo.",
+    music: "Música",
+    musicPending: "Preparant música…",
+    musicUnavailable: "La música no està disponible en aquest navegador.",
+    musicPaused: "Música a punt. Prem Música o juga per escoltar-la.",
     speechGoal: "Gol!",
     speechOut: "Fora!",
     speechWin: "Golàs!",
@@ -272,6 +293,7 @@ const state = {
   language: DEFAULT_LANGUAGE,
   country: "ALL",
   sfxEnabled: true,
+  musicEnabled: true,
   voiceEnabled: false,
   roundStatus: ROUND.LOADING,
   savedRound: null
@@ -298,6 +320,9 @@ const els = {
   confetti: document.getElementById("confetti"),
   languageSwitcher: document.getElementById("languageSwitcher"),
   audioControls: document.getElementById("audioControls"),
+  audioStatus: document.getElementById("audioStatus"),
+  musicStatus: document.getElementById("musicStatus"),
+  musicToggle: document.getElementById("musicToggle"),
   sfxToggle: document.getElementById("sfxToggle"),
   voiceToggle: document.getElementById("voiceToggle"),
   scoreboard: document.getElementById("scoreboard"),
@@ -313,7 +338,7 @@ const els = {
   resultStreak: document.getElementById("resultStreak"),
   dataErrorPanel: document.getElementById("dataErrorPanel"),
   ball: document.getElementById("ball"),
-  netRect: document.querySelector(".net-rect")
+  net: document.querySelector(".net")
 };
 
 const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)");
@@ -357,6 +382,7 @@ function loadPersist() {
   if (LANGUAGES.includes(saved.language)) state.language = saved.language;
   if (typeof saved.country === "string") state.country = saved.country;
   if (typeof saved.sfxEnabled === "boolean") state.sfxEnabled = saved.sfxEnabled;
+  if (typeof saved.musicEnabled === "boolean") state.musicEnabled = saved.musicEnabled;
   if (typeof saved.voiceEnabled === "boolean") state.voiceEnabled = saved.voiceEnabled;
   if (saved.version === STORAGE_VERSION && saved.round && typeof saved.round === "object") {
     state.savedRound = saved.round;
@@ -392,6 +418,7 @@ function savePersist() {
         language: state.language,
         country: state.country,
         sfxEnabled: state.sfxEnabled,
+        musicEnabled: state.musicEnabled,
         voiceEnabled: state.voiceEnabled,
         round: currentRoundSnapshot() || state.savedRound
       })
@@ -401,53 +428,28 @@ function savePersist() {
   }
 }
 
-let audioCtx;
-function audioSupported() {
-  return Boolean(window.AudioContext || window.webkitAudioContext);
-}
-
-function beep(freq = 880, duration = 0.08, type = "square", volume = 0.03) {
-  if (!state.sfxEnabled || !audioSupported()) return;
-
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
-
-    const oscillator = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    oscillator.type = type;
-    oscillator.frequency.value = freq;
-    gain.gain.value = volume;
-    oscillator.connect(gain);
-    gain.connect(audioCtx.destination);
-    oscillator.onended = () => {
-      oscillator.disconnect();
-      gain.disconnect();
-    };
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + duration);
-  } catch {
-    // Sound effects are non-essential.
-  }
-}
-
+// A missing optional controller must never prevent a round from starting.
+const gameAudio = window.AHORCABOL_AUDIO || {
+  supported: false,
+  musicSupported: false,
+  getMusicStatus: () => "unavailable",
+  setMusicEnabled() {}, activate() {},
+  getStatus: () => "unavailable",
+  play() {}, clear() {}, setEnabled() {}, setPaused() {}
+};
 const sfx = {
-  good() { beep(940, 0.06, "square", 0.045); },
-  bad() { beep(240, 0.1, "sawtooth", 0.05); },
-  win() {
-    [880, 990, 1180].forEach((freq, index) => {
-      scheduleEffect(() => beep(freq, 0.1, "triangle", 0.05), index * 110);
-    });
-  },
-  lose() {
-    [300, 220, 180].forEach((freq, index) => {
-      scheduleEffect(() => beep(freq, 0.13, "sawtooth", 0.055), index * 125);
-    });
-  }
+  good: () => gameAudio.play("correct"),
+  bad: () => gameAudio.play("incorrect"),
+  hint: () => gameAudio.play("hint"),
+  win: () => gameAudio.play("win"),
+  lose: () => gameAudio.play("lose")
 };
 
 let voices = [];
+let speechGeneration = 0;
 function cancelSpeech() {
+  speechGeneration += 1;
+  gameAudio.setSpeechActive?.(false);
   try { window.speechSynthesis?.cancel(); } catch { /* Voice is optional. */ }
 }
 
@@ -494,7 +496,7 @@ function localizedSpeechText(text) {
 }
 
 function speak(text) {
-  if (!state.voiceEnabled || !("speechSynthesis" in window)) return;
+  if (!state.voiceEnabled || document.hidden || !("speechSynthesis" in window)) return;
 
   try {
     const voice = selectLocalizedVoice();
@@ -506,28 +508,54 @@ function speak(text) {
     utterance.rate = 0.96;
     utterance.pitch = 0.96;
 
-    window.speechSynthesis.cancel();
+    cancelSpeech();
+    const generation = speechGeneration;
+    utterance.onstart = () => {
+      if (generation === speechGeneration) gameAudio.setSpeechActive?.(true);
+    };
+    const finish = () => {
+      if (generation === speechGeneration) gameAudio.setSpeechActive?.(false);
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
     window.speechSynthesis.speak(utterance);
   } catch {
+    cancelSpeech();
     // Voice feedback is optional.
   }
 }
 
 function renderAudioSettings() {
-  const sfxAvailable = audioSupported();
+  const sfxAvailable = gameAudio.supported;
+  const audioStatus = gameAudio.getStatus();
+  const outputReady = audioStatus === "idle" || audioStatus === "ready";
   const voiceAvailable = "speechSynthesis" in window && Boolean(selectLocalizedVoice());
-
-  if (!sfxAvailable) state.sfxEnabled = false;
 
   els.sfxToggle.disabled = !sfxAvailable;
   els.voiceToggle.disabled = !voiceAvailable;
 
-  els.sfxToggle.classList.toggle("active", state.sfxEnabled);
+  els.sfxToggle.classList.toggle("active", state.sfxEnabled && outputReady);
   els.voiceToggle.classList.toggle("active", voiceAvailable && state.voiceEnabled);
   els.sfxToggle.setAttribute("aria-pressed", String(state.sfxEnabled));
   els.voiceToggle.setAttribute("aria-pressed", String(voiceAvailable && state.voiceEnabled));
-  els.sfxToggle.title = sfxAvailable ? t("sfx") : t("sfxUnavailable");
+  const audioMessage = !sfxAvailable || audioStatus === "error" ? t("sfxUnavailable")
+    : audioStatus === "blocked" && state.sfxEnabled ? t("sfxPaused") : "";
+  els.sfxToggle.title = audioMessage || t("sfx");
+  els.audioStatus.textContent = audioMessage;
+  els.audioStatus.hidden = !audioMessage;
   els.voiceToggle.title = voiceAvailable ? t("voice") : t("voiceUnavailable");
+
+  const musicStatus = gameAudio.getMusicStatus();
+  els.musicToggle.disabled = !gameAudio.musicSupported || musicStatus === "error";
+  els.musicToggle.setAttribute("aria-pressed", String(state.musicEnabled));
+  els.musicToggle.classList.toggle("active", state.musicEnabled && !els.musicToggle.disabled);
+  els.musicToggle.setAttribute("aria-busy", String(musicStatus === "pending" && state.musicEnabled));
+  const musicMessage = !gameAudio.musicSupported || musicStatus === "error" ? t("musicUnavailable")
+    : !state.musicEnabled ? "" : musicStatus === "pending" ? t("musicPending")
+    : musicStatus !== "playing" ? t("musicPaused") : "";
+  els.musicStatus.textContent = musicMessage;
+  els.musicStatus.hidden = !musicMessage;
+  els.musicToggle.title = musicMessage || t("music");
 }
 
 const effectTimers = new Set();
@@ -542,10 +570,11 @@ function scheduleEffect(callback, delay) {
 function clearRoundEffects() {
   effectTimers.forEach((timer) => window.clearTimeout(timer));
   effectTimers.clear();
+  gameAudio.clear();
   cancelSpeech();
   els.confetti.replaceChildren();
   els.goal.classList.remove("shake");
-  els.netRect?.classList.remove("ripple");
+  els.net?.classList.remove("ripple");
 }
 
 function throwConfetti() {
@@ -785,8 +814,9 @@ function renderMasked() {
   });
 
   const accessibleWord = state.masked
-    .map((item) => (item.shown ? item.character : "_"))
-    .join("");
+    .map((item) => /\s/u.test(item.character) ? t("wordBreak")
+      : item.shown ? item.character : t("hiddenLetter"))
+    .join(", ");
   els.masked.setAttribute("aria-label", `${t("hiddenTeam")}: ${accessibleWord}`);
 }
 
@@ -885,12 +915,14 @@ function useHint() {
   renderStats();
   updateGoalGraphics();
   renderRoundControls();
-  say(t("hintMessage"));
-  sfx.good();
+  say(t("hintMessage", { letter: normalized }));
   setBallAnim("tap");
 
   if (isSolved()) handleWin();
-  else savePersist();
+  else {
+    sfx.hint();
+    savePersist();
+  }
 }
 
 function giveUp() {
@@ -900,6 +932,7 @@ function giveUp() {
   state.streak = 0;
   revealAll();
   say(t("was", { team: state.current.nombre }));
+  cancelSpeech();
   sfx.lose();
   finishRound(ROUND.GIVEN_UP);
 }
@@ -917,13 +950,15 @@ function onGuess(rawCharacter) {
     markKey(rawCharacter, true);
     state.score += 100 * hits;
     renderStats();
-    say(t("goal"));
-    speak(t("speechGoal"));
-    sfx.good();
+    say(`${character}: ${t("correctLetter")}. ${t("goal")}`);
     setBallAnim("tap");
 
     if (isSolved()) handleWin();
-    else savePersist();
+    else {
+      speak(t("speechGoal"));
+      sfx.good();
+      savePersist();
+    }
     return;
   }
 
@@ -932,9 +967,7 @@ function onGuess(rawCharacter) {
   renderStats();
   updateGoalGraphics();
   renderRoundControls();
-  say(t("out"));
-  speak(t("speechOut"));
-  sfx.bad();
+  say(`${character}: ${t("wrongLetter")}. ${t("out")}`);
   goalShake();
   setBallAnim("post");
 
@@ -942,9 +975,12 @@ function onGuess(rawCharacter) {
     state.streak = 0;
     revealAll();
     say(t("gameOver", { team: state.current.nombre }));
+    cancelSpeech();
     sfx.lose();
     finishRound(ROUND.LOST);
   } else {
+    speak(t("speechOut"));
+    sfx.bad();
     savePersist();
   }
 }
@@ -962,10 +998,10 @@ function handleWin() {
   throwConfetti();
   setBallAnim("kick");
 
-  if (els.netRect) {
-    els.netRect.classList.remove("ripple");
-    void els.netRect.offsetWidth;
-    els.netRect.classList.add("ripple");
+  if (els.net) {
+    els.net.classList.remove("ripple");
+    void els.net.offsetWidth;
+    els.net.classList.add("ripple");
   }
 
   finishRound(ROUND.WON);
@@ -1106,6 +1142,7 @@ function onKeydown(event) {
     [ROUND.WON, ROUND.LOST, ROUND.GIVEN_UP].includes(state.roundStatus)
   ) {
     event.preventDefault();
+    gameAudio.activate();
     startRound();
   }
 }
@@ -1252,15 +1289,28 @@ function applyLanguage(language, { persist = true } = {}) {
 }
 
 function toggleSfx() {
-  if (!audioSupported()) {
+  if (!gameAudio.supported) {
     say(t("sfxUnavailable"));
     return;
   }
 
   state.sfxEnabled = !state.sfxEnabled;
+  gameAudio.setEnabled(state.sfxEnabled);
   renderAudioSettings();
   savePersist();
   if (state.sfxEnabled) sfx.good();
+  else gameAudio.activate();
+}
+
+function toggleMusic() {
+  if (!gameAudio.musicSupported || gameAudio.getMusicStatus() === "error") return;
+  const waiting = ["idle", "blocked"].includes(gameAudio.getMusicStatus());
+  // The first click starts a saved/default-on channel awaiting a gesture.
+  state.musicEnabled = waiting || !state.musicEnabled;
+  gameAudio.setMusicEnabled(state.musicEnabled);
+  if (state.musicEnabled) gameAudio.activate();
+  renderAudioSettings();
+  savePersist();
 }
 
 function toggleVoice() {
@@ -1271,6 +1321,7 @@ function toggleVoice() {
 
   state.voiceEnabled = !state.voiceEnabled;
   if (!state.voiceEnabled) cancelSpeech();
+  gameAudio.activate();
   renderAudioSettings();
   savePersist();
 }
@@ -1285,20 +1336,35 @@ function bindEvents() {
     abandonRoundForFilterChange();
     state.country = els.country.value;
     rebuildPool();
+    gameAudio.activate();
     startRound();
   });
 
+  els.musicToggle.addEventListener("click", toggleMusic);
   els.sfxToggle.addEventListener("click", toggleSfx);
   els.voiceToggle.addEventListener("click", toggleVoice);
   els.hint.addEventListener("click", useHint);
   els.giveUp.addEventListener("click", giveUp);
-  els.nextGame.addEventListener("click", startRound);
+  els.nextGame.addEventListener("click", () => { gameAudio.activate(); startRound(); });
   els.retryData.addEventListener("click", () => window.location.reload());
   window.addEventListener("keydown", onKeydown);
+  document.addEventListener("visibilitychange", () => {
+    gameAudio.setPaused(document.hidden);
+    if (document.hidden) cancelSpeech();
+  });
+  window.addEventListener("pagehide", () => {
+    gameAudio.setPaused(true);
+    cancelSpeech();
+  });
+  window.addEventListener("pageshow", () => gameAudio.setPaused(document.hidden));
 }
 
 (function init() {
   loadPersist();
+  gameAudio.setEnabled(state.sfxEnabled);
+  gameAudio.setMusicEnabled(state.musicEnabled);
+  gameAudio.setPaused(Boolean(document.hidden));
+  gameAudio.onStatusChange = renderAudioSettings;
   buildKeyboard();
   bindEvents();
   applyLanguage(state.language, { persist: false });
